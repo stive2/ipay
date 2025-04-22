@@ -34,7 +34,7 @@ class MoneyInController extends Controller
         ));
     }
     public function exportData(){
-        $file_name = now()->format('Y-m-d_H:i:s') . "_money_in_Logs".'.xlsx';
+        $file_name = now()->format('Y-m-d_H:i:s') . "_journal_collectes".'.xlsx';
         return Excel::download(new MoneyInTrxExport,$file_name);
     }
 }

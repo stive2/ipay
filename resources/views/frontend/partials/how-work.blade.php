@@ -3,7 +3,7 @@
     $work_slug = Illuminate\Support\Str::slug(App\Constants\SiteSectionConst::WORK_SECTION);
     $work = App\Models\Admin\SiteSections::getData( $work_slug)->first();
 @endphp
-<section class="how-it-work-section pt-120">
+<section class="how-it-work-section pt-10">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-xl-12 text-center">

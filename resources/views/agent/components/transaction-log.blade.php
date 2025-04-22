@@ -45,7 +45,7 @@
                             @elseif ($item->type == payment_gateway_const()::MONEYIN)
                                 @if ($item->isAuthUserAgent())
                                     @if ($item->attribute == payment_gateway_const()::SEND)
-                                        <h4 class="title">{{ __("Money In To") }} {{ __(" @" . @$item->details->receiver_username." (".@$item->details->receiver_email.")") }} </h4>
+                                        <h4 class="title">{{ __("Collecte de ") }} {{ __(" @" . @$item->details->receiver_name ." (".@$item->details->receiver_matricule.")") }} </h4>
                                     @endif
                                 @endif
                             @endif

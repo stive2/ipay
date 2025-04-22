@@ -143,7 +143,7 @@
             </form>
         </div>
     </div>
-    <div class="custom-card">
+    {{--  <div class="custom-card">
         <div class="card-header">
             <h6 class="title">{{ __("Basic Settings (Merchant)") }}</h6>
         </div>
@@ -197,7 +197,7 @@
                 </div>
             </form>
         </div>
-    </div>
+    </div>  --}}
     <div class="custom-card mt-15">
         <div class="card-header">
             <h6 class="title">{{ __("Activation Settings (System & User)") }}</h6>
@@ -376,7 +376,7 @@
             </div>
         </div>
     </div>
-    <div class="custom-card mt-15">
+    {{--  <div class="custom-card mt-15">
         <div class="card-header">
             <h6 class="title">{{ __("Activation Settings (Merchant)") }}</h6>
         </div>
@@ -459,7 +459,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div>  --}}
 @endsection
 
 @push('script')

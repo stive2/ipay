@@ -26,16 +26,28 @@ use Illuminate\Support\Arr;
 use App\Notifications\User\SendMail;
 use Carbon\Carbon;
 use App\Events\Agent\AgentCoordinatesUpdated;
+use App\Exports\AgentExport;
+use App\Imports\AgentImport;
+use App\Models\Admin\Currency;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AgentCareController extends Controller
 {
     public function index()
     {
         $page_title = __("All Agents");
-        $agents = Agent::orderBy('id', 'desc')->paginate(12);
+        // $agents = Agent::orderBy('id', 'desc')->paginate(12);
+        $agents = Agent::with('wallet')->leftJoin('agent_profits', 'agents.id', '=', 'agent_profits.agent_id')
+                        ->select('agents.*',
+                            DB::raw('SUM(CASE WHEN agent_profits.paid = 0 THEN agent_profits.total_charge ELSE 0 END) as commissions')
+                        ) // Calcul de la somme des `total_charge` où le statut est 0
+                        ->groupBy('agents.id') // Grouper par agent pour la somme
+                        ->orderBy('agents.id', 'desc')
+                        ->paginate(12);
+
         return view('admin.sections.agent-care.index', compact(
             'page_title',
             'agents'
@@ -44,16 +56,28 @@ class AgentCareController extends Controller
     public function active()
     {
         $page_title = __("Active Agent");
-        $agents = Agent::active()->orderBy('id', 'desc')->paginate(12);
+        // $agents = Agent::active()->orderBy('id', 'desc')->paginate(12);
+        // Joindre la table `agent_profits` et récupérer le champ `total_charge`
+        $agents = Agent::with('wallet')->active()
+                        ->leftJoin('agent_profits', 'agents.id', '=', 'agent_profits.agent_id')
+                        ->select('agents.*',
+                            DB::raw('SUM(CASE WHEN agent_profits.paid = 0 THEN agent_profits.total_charge ELSE 0 END) as commissions')
+                        ) // Calcul de la somme des `total_charge` où le statut est 0
+                        ->groupBy('agents.id') // Grouper par agent pour la somme
+                        ->orderBy('agents.id', 'desc')
+                        ->paginate(20);
+        // return $agents;
         return view('admin.sections.agent-care.index', compact(
             'page_title',
             'agents'
         ));
     }
+
     public function banned()
     {
         $page_title = __("Banned Agents");
         $agents = Agent::banned()->orderBy('id', 'desc')->paginate(12);
+
         return view('admin.sections.agent-care.index', compact(
             'page_title',
             'agents',
@@ -119,6 +143,59 @@ class AgentCareController extends Controller
 
         return back()->with(['success' => [__("Email successfully sended")]]);
     }
+
+    public function importData(Request $request)
+    {
+        // Validate the incoming request to ensure a file is uploaded
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:4196',
+        ]);
+
+        // Get the file from the request
+        $file = $request->file('file');
+
+        // Import the Excel file using the import class
+        Excel::import(new AgentImport, $file);
+
+        $this->registered();
+        // Return a response after the import is complete
+        return redirect()->back()->with('success', 'Agents imported successfully.');
+    }
+
+    protected function registered()
+    {
+        $agentsWithoutWallet = Agent::leftJoin('agent_wallets', 'agents.id', '=', 'agent_wallets.agent_id')
+                    ->whereNull('agent_wallets.agent_id')
+                    ->select('agents.*')
+                    ->get();
+                    // ->toArray();
+
+        foreach($agentsWithoutWallet as $row => $agent) {
+            $this->createAgentWallets($agent);
+        }
+    }
+
+    protected function createAgentWallets($agent){
+        $currencies = Currency::active()->roleHasOne()->pluck("id")->toArray();
+        $wallets = [];
+        foreach($currencies as $currency_id) {
+            $wallets[] = [
+                'agent_id'       => $agent->id,
+                'currency_id'   => $currency_id,
+                'balance'       => 0,
+                'status'        => true,
+                'created_at'    => now(),
+            ];
+        }
+
+        AgentWallet::insert($wallets);
+    }
+
+    public function exportData(){
+        $file_name = now()->format('Y-m-d_H:i:s') . "_Agents".'.xlsx';
+        return Excel::download(new AgentExport, $file_name);
+    }
+
     public function userDetails($username)
     {
         $page_title = __("Agent Details");
@@ -161,11 +238,11 @@ class AgentCareController extends Controller
         $user = Agent::where('username', $request->username)->orWhere('username', $request->username)->first();
         if (!$user) return back()->with(['error' => [__("Ops! Agent not exists")]]);
 
-        /* $agent_profits = AgentProfit::where('agent_id', $user->id)->where('paid', '0')->sum('total_charge');
+        $agent_profits = AgentProfit::where('agent_id', $user->id)->where('paid', '0')->sum('total_charge');
         $basicSetting = BasicSettings::first();
         if ($basicSetting->min_commission_payable > $agent_profits) {
-            return back()->with(['error' => [__("Sorry! The commission amount is under de minimum required")]]);
-        } */
+            return back()->with(['error' => [__("Désolé, le montant minimum de paiement pour la commission n'est pas atteint")]]);
+        }
 
         $admin = auth()->user();
 
@@ -189,6 +266,7 @@ class AgentCareController extends Controller
             'username'              => "required|exists:agents,username",
             'firstname'             => "required|string|max:60",
             'lastname'              => "required|string|max:60",
+            'matricule'             => "required|string|max:60",
             'mobile_code'           => "required|string|max:10",
             'mobile'                => "required|string|max:20",
             'address'               => "nullable|string|max:250",
@@ -315,7 +393,7 @@ class AgentCareController extends Controller
         }
 
         $validated = $validator->validate();
-        $agents = Agent::search($validated['text'])->limit(10)->get();
+        $agents = Agent::search($validated['text'])->limit(20)->get();
         return view('admin.components.search.agent-search', compact(
             'agents',
         ));
@@ -536,7 +614,14 @@ class AgentCareController extends Controller
     public function showGoogleMap()
     {
         $page_title = __("Locate Agent");
-        $agents = Agent::with('latestCoordinate')->active()->orderBy('id', 'desc')->paginate(5);
+        $agents = Agent::with('latestCoordinate','wallet')->active()
+                        ->leftJoin('agent_profits', 'agents.id', '=', 'agent_profits.agent_id')
+                        ->select('agents.*',
+                            DB::raw('SUM(CASE WHEN agent_profits.paid = 0 THEN agent_profits.total_charge ELSE 0 END) as commissions')
+                        ) // Calcul de la somme des `total_charge` où le statut est 0
+                        ->groupBy('agents.id') // Grouper par agent pour la somme
+                        ->orderBy('agents.id', 'desc')
+                        ->paginate(5);
         return view('admin.sections.agent-care.index', compact(
             'page_title',
             'agents'

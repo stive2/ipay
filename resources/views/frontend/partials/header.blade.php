@@ -47,11 +47,11 @@
                                         @endforeach
                                     </select>
                                 </div>
-                               @auth
+                               {{--  @auth
                                <a href="{{ setRoute('user.dashboard') }}" class="btn--base"><i class="las la-user-edit me-2"></i></i>{{ __("Dashboard") }}</a>
                                @else
                                <a href="{{ setRoute('user.login') }}" class="btn--base"><i class="las la-user-edit me-2"></i></i>{{ __("Login Now") }}</a>
-                               @endauth
+                               @endauth  --}}
                             </div>
                         </div>
                     </nav>

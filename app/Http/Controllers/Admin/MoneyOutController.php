@@ -4,9 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Constants\NotificationConst;
 use App\Constants\PaymentGatewayConst;
+use App\Exports\AgentCollecte;
+use App\Exports\MoneyOutCBSIntegrated;
 use App\Exports\MoneyOutCBSPendingExport;
+use App\Exports\MoneyOutPending;
+use App\Exports\MoneyOutRejected;
 use App\Exports\MoneyOutTransactionExport;
+use App\Exports\MoneyOutValidated;
 use App\Http\Controllers\Controller;
+use App\Models\Agent;
 use App\Models\AgentNotification;
 use App\Models\AgentWallet;
 use App\Models\Merchants\MerchantNotification;
@@ -38,14 +44,16 @@ class MoneyOutController extends Controller
     }
     public function index()
     {
-        $page_title = __("All Logs");
+        $page_title = __("Toutes les collectes");
+        $agents = Agent::all();
         $transactions = Transaction::with(
             'user:id,firstname,lastname,email,username,full_mobile',
             'currency:id,name,alias,payment_gateway_id,currency_code,rate',
         )->where('type', PaymentGatewayConst::TYPEMONEYOUT)->latest()->paginate(20);
         return view('admin.sections.money-out.index', compact(
             'page_title',
-            'transactions'
+            'transactions',
+            'agents'
         ));
     }
 
@@ -56,13 +64,15 @@ class MoneyOutController extends Controller
     public function pending()
     {
         $page_title = __("Pending Logs");
+        $agents = Agent::all();
         $transactions = Transaction::with(
             'user:id,firstname,lastname,email,username,full_mobile',
             'currency:id,name,alias,payment_gateway_id,currency_code,rate',
         )->where('type', PaymentGatewayConst::TYPEMONEYOUT)->where('status', 2)->latest()->paginate(20);
         return view('admin.sections.money-out.index', compact(
             'page_title',
-            'transactions'
+            'transactions',
+            'agents'
         ));
     }
     /**
@@ -72,13 +82,15 @@ class MoneyOutController extends Controller
     public function complete()
     {
         $page_title = __("Complete Logs");
+        $agents = Agent::all();
         $transactions = Transaction::with(
             'user:id,firstname,lastname,email,username,full_mobile',
             'currency:id,name,alias,payment_gateway_id,currency_code,rate',
         )->where('type', PaymentGatewayConst::TYPEMONEYOUT)->where('status', 1)->latest()->paginate(20);
         return view('admin.sections.money-out.index', compact(
             'page_title',
-            'transactions'
+            'transactions',
+            'agents'
         ));
     }
     /**
@@ -88,44 +100,69 @@ class MoneyOutController extends Controller
     public function canceled()
     {
         $page_title =  __("Canceled Logs");
+        $agents = Agent::all();
         $transactions = Transaction::with(
             'user:id,firstname,lastname,email,username,full_mobile',
             'currency:id,name,alias,payment_gateway_id,currency_code,rate',
         )->where('type', PaymentGatewayConst::TYPEMONEYOUT)->where('status', 4)->latest()->paginate(20);
         return view('admin.sections.money-out.index', compact(
             'page_title',
-            'transactions'
+            'transactions',
+            'agents'
         ));
     }
 
     public function cbsPending()
     {
         $page_title =  __("CBS Pending Logs");
+        $agents = Agent::all();
         $transactions = Transaction::with(
             'user:id,firstname,lastname,email,username,full_mobile',
             'currency:id,name,alias,payment_gateway_id,currency_code,rate',
         )->where('type', PaymentGatewayConst::TYPEMONEYOUT)->where('status', 1)->where('cbsTransfert', 'ND')->latest()->paginate(20);
         return view('admin.sections.money-out.index', compact(
             'page_title',
-            'transactions'
+            'transactions',
+            'agents'
         ));
     }
+
     public function cbsCompleted()
     {
         $page_title =  __("CBS Completed Logs");
+        $agents = Agent::all();
         $transactions = Transaction::with(
             'user:id,firstname,lastname,email,username,full_mobile',
             'currency:id,name,alias,payment_gateway_id,currency_code,rate',
         )->where('type', PaymentGatewayConst::TYPEMONEYOUT)->where('status', 1)->where('cbsTransfert', 'OUI')->latest()->paginate(20);
         return view('admin.sections.money-out.index', compact(
             'page_title',
-            'transactions'
+            'transactions',
+            'agents'
+        ));
+    }
+
+    public function agentCollect()
+    {
+        $page_title =  __("Montant collecté par agent");
+
+        $transactions = Transaction::join('agents', 'agents.id', '=', 'transactions.agent_id')
+                        ->where('transactions.type', PaymentGatewayConst::MONEYIN)
+                        ->where('transactions.attribute', PaymentGatewayConst::SEND)
+                        // ->whereDate('transactions.created_at', today())
+                        ->groupBy('agents.matricule','agents.username','agents.full_mobile', 'agents.id', 'agents.firstname', 'agents.lastname', 'agents.email') // Important pour certains DB stricts
+                        ->select('agents.matricule','agents.username','agents.full_mobile', 'agents.id', 'agents.firstname', 'agents.lastname', 'agents.email', DB::raw('SUM(transactions.request_amount) as montant'))
+                        ->get();
+
+
+        return view('admin.sections.money-out.agentCollect', compact(
+            'page_title',
+            'transactions',
         ));
     }
 
     public function moneyOutDetails($id)
     {
-
         $data = Transaction::where('id', $id)->with(
             'user:id,firstname,lastname,email,username,full_mobile',
             'currency:id,name,alias,payment_gateway_id,currency_code,rate',
@@ -137,6 +174,7 @@ class MoneyOutController extends Controller
             'data'
         ));
     }
+
     public function approved(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -362,15 +400,149 @@ class MoneyOutController extends Controller
             return back()->with(['error' => [$e->getMessage()]]);
         }
     }
-    public function exportData()
+
+    public function exportData(Request $request)
     {
-        $file_name = now()->format('Y-m-d_H:i:s') . "_withdraw_Money_Logs" . '.xlsx';
-        return Excel::download(new MoneyOutTransactionExport, $file_name);
+        $filters = $request->only(['filter_date', 'agent_id']);
+
+        // Gestion de la date
+        $date = isset($filters['filter_date'])
+        ? \Carbon\Carbon::parse($filters['filter_date'])->format('d-m-Y')
+        : now()->format('d-m-Y');
+
+        // Construction du nom de fichier
+        if (!empty($filters['agent_id'])) {
+            $agent = Agent::find($filters['agent_id']);
+            $agentName = $agent ? $agent->firstname . ' ' . $agent->lastname : 'Inconnu';
+            $file_name = "COLLECTE DU {$date} ({$agentName}).xlsx";
+        } else {
+            $file_name = "COLLECTE DU {$date}.xlsx";
+        }
+
+        return Excel::download(new MoneyOutTransactionExport($filters), $file_name);
     }
 
-    public function exportCBSPending()
+    public function exportPending(Request $request)
     {
-        $file_name = now()->format('Y-m-d_H:i:s') . "_cbs_pending_Logs" . '.xlsx';
-        return Excel::download(new MoneyOutCBSPendingExport, $file_name);
+        $filters = $request->only(['filter_date', 'agent_id']);
+
+        // Gestion de la date
+        $date = isset($filters['filter_date'])
+        ? \Carbon\Carbon::parse($filters['filter_date'])->format('d-m-Y')
+        : now()->format('d-m-Y');
+
+        // Construction du nom de fichier
+        if (!empty($filters['agent_id'])) {
+            $agent = Agent::find($filters['agent_id']);
+            $agentName = $agent ? $agent->firstname . ' ' . $agent->lastname : 'Inconnu';
+            $file_name = "COLLECTE JOURNALIÈRE EN ATTENTE DU {$date} ({$agentName}).xlsx";
+        } else {
+            $file_name = "COLLECTE JOURNALIÈRE EN ATTENTE DU {$date}.xlsx";
+        }
+
+        return Excel::download(new MoneyOutPending($filters), $file_name);
+    }
+
+    public function exportValidated(Request $request)
+    {
+        $filters = $request->only(['filter_date', 'agent_id']);
+
+        // Gestion de la date
+        $date = isset($filters['filter_date'])
+        ? \Carbon\Carbon::parse($filters['filter_date'])->format('d-m-Y')
+        : now()->format('d-m-Y');
+
+        // Construction du nom de fichier
+        if (!empty($filters['agent_id'])) {
+            $agent = Agent::find($filters['agent_id']);
+            $agentName = $agent ? $agent->firstname . ' ' . $agent->lastname : 'Inconnu';
+            $file_name = "COLLECTE JOURNALIÈRE VALIDES DU {$date} ({$agentName}).xlsx";
+        } else {
+            $file_name = "COLLECTE JOURNALIÈRE VALIDES DU {$date}.xlsx";
+        }
+
+        return Excel::download(new MoneyOutValidated($filters), $file_name);
+    }
+
+    public function exportRejected(Request $request)
+    {
+        $filters = $request->only(['filter_date', 'agent_id']);
+
+        // Gestion de la date
+        $date = isset($filters['filter_date'])
+        ? \Carbon\Carbon::parse($filters['filter_date'])->format('d-m-Y')
+        : now()->format('d-m-Y');
+
+        // Construction du nom de fichier
+        if (!empty($filters['agent_id'])) {
+            $agent = Agent::find($filters['agent_id']);
+            $agentName = $agent ? $agent->firstname . ' ' . $agent->lastname : 'Inconnu';
+            $file_name = "COLLECTE JOURNALIÈRE REJETES DU {$date} ({$agentName}).xlsx";
+        } else {
+            $file_name = "COLLECTE JOURNALIÈRE REJETES DU {$date}.xlsx";
+        }
+
+        return Excel::download(new MoneyOutRejected($filters), $file_name);
+    }
+
+    public function exportCBSPending(Request $request)
+    {
+        $filters = $request->only(['filter_date', 'agent_id']);
+
+        // Gestion de la date
+        $date = isset($filters['filter_date'])
+        ? \Carbon\Carbon::parse($filters['filter_date'])->format('d-m-Y')
+        : now()->format('d-m-Y');
+
+        // Construction du nom de fichier
+        if (!empty($filters['agent_id']) && $filters['agent_id'] != 0) {
+            $agent = Agent::find($filters['agent_id']);
+            $agentName = $agent ? $agent->firstname . ' ' . $agent->lastname : 'Inconnu';
+            $file_name = "COLLECTE JOURNALIÈRE DU {$date} ({$agentName}).xlsx";
+        } else {
+            $file_name = "COLLECTE JOURNALIÈRE DU {$date}.xlsx";
+        }
+
+        return Excel::download(new MoneyOutCBSPendingExport($filters), $file_name);
+    }
+
+    public function exportIntegrated(Request $request)
+    {
+        $filters = $request->only(['filter_date', 'agent_id']);
+
+        // Gestion de la date
+        $date = isset($filters['filter_date'])
+        ? \Carbon\Carbon::parse($filters['filter_date'])->format('d-m-Y')
+        : now()->format('d-m-Y');
+
+        // Construction du nom de fichier
+        if (!empty($filters['agent_id'])) {
+            $agent = Agent::find($filters['agent_id']);
+            $agentName = $agent ? $agent->firstname . ' ' . $agent->lastname : 'Inconnu';
+            $file_name = "COLLECTE JOURNALIÈRE INTEGRE DU {$date} ({$agentName}).xlsx";
+        } else {
+            $file_name = "COLLECTE JOURNALIÈRE INTEGRE DU {$date}.xlsx";
+        }
+
+        return Excel::download(new MoneyOutCBSIntegrated($filters), $file_name);
+    }
+
+    public function exportAgentCollect(Request $request)
+    {
+        $filters = $request->only(['filter_date']);
+
+        // Gestion de la date
+        $date = isset($filters['filter_date'])
+        ? \Carbon\Carbon::parse($filters['filter_date'])->format('d-m-Y')
+        : now()->format('d-m-Y');
+
+        // Construction du nom de fichier
+        if (!empty($filters['filter_date'])) {
+            $file_name = "MONTANT COLLECTE PAR AGENT LE {$date}.xlsx";
+        } else {
+            $file_name = "MONTANT COLLECTE PAR AGENT.xlsx";
+        }
+
+        return Excel::download(new AgentCollecte($filters), $file_name);
     }
 }

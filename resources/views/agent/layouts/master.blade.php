@@ -15,19 +15,20 @@
 
     @stack('css')
     <script>
-        function sendCoordinates(latitude, longitude, id) {
-            const url = 'http://127.0.0.1:82/agent/storeCoordinate'; // L'URL API
+
+        function sendCoordinates(latitude, longitude) {
+            const url = 'http://20.84.117.234/api/storeCoordinate'; // L'URL API
 
             // Données à envoyer dans le corps de la requête
             const data = {
                 latitude: latitude,
                 longitude: longitude,
-                id: id
+                id: localStorage.getItem('auth_id')
             };
 
-            // Options de la requête fetch
+            // Options de la requête
             const options = {
-                method: 'POST', // Méthode de la requête
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
@@ -37,7 +38,7 @@
                 body: JSON.stringify(data) // Conversion des données en JSON
             };
 
-            // Envoi de la requête POST
+            // Envoi de la requête
             fetch(url, options)
             .then(response => {
                 if (!response.ok) {
@@ -47,19 +48,16 @@
             })
             .then(data => {
                 console.log('Coordonnée enregistrée avec succès:', data);
-                // Vous pouvez ajouter d'autres actions ici, par exemple afficher un message à l'utilisateur
             })
             .catch(error => {
                 console.error('Erreur:', error);
-                // Gérer l'erreur, par exemple afficher un message d'erreur à l'utilisateur
             });
         }
 
         document.addEventListener("DOMContentLoaded", function(){
 
-            const email = @json(Auth::user()->email); // Remplacez par l'email de l'utilisateur
-            const password = '123456789'; // Remplacez par le mot de passe de l'utilisateur
-            // loginUser(email, password);
+            const email = @json(Auth::user()->email);
+            loginUser(email);
 
             // HTML5 geolocation.
             if (navigator.geolocation) {
@@ -71,7 +69,7 @@
                             lng: position.coords.longitude,
                             };
 
-                            sendCoordinates(pos.lat, pos.lng, @json(Auth::user()->id));
+                            sendCoordinates(pos.lat, pos.lng);
                         });
                 }, 10000);
             }

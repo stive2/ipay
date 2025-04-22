@@ -112,7 +112,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-xl-6 col-lg-6 mb-10">
+                            {{--  <div class="col-xl-6 col-lg-6 mb-10">
                                 <div class="table-area custom-table-area">
                                     <div class="table-wrapper">
                                         <div class="table-responsive">
@@ -150,7 +150,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </div>  --}}
                         </div>
                     </div>
                 </div>

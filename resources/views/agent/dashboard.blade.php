@@ -13,7 +13,13 @@
 <div class="body-wrapper">
     <div class="dashboard-area mt-10">
         <div class="dashboard-header-wrapper">
-            <h3 class="title">{{ __("Overview") }}</h3>
+            <h3 class="title">{{ __("Overview") }}
+                @if(status_collecteAgent())
+                    <span style="color: green; font-size: 15px">(collecte ouverte)</span>
+                @else
+                    <span style="color: red; font-size: 15px">(collecte fermée)</span>
+                @endif
+            </h3>
         </div>
         <div class="dashboard-item-area">
             <div class="row mb-20-none">

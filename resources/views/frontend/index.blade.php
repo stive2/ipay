@@ -20,17 +20,22 @@
 <section class="banner-section bg_img" data-background="{{ asset('public/frontend/') }}/images/banner/bg-1.jpg">
     <div class="container home-container">
         <div class="row mb-30-none">
-            <div class="col-lg-6 col-md-6 mb-30">
+            <div class="col-lg-6 col-md-6 mb-10">
                 <div class="banner-thumb-area text-center">
                     <img src="{{ get_image(@$banner->value->images->banner_image,'site-section') }}" alt="banner">
                 </div>
             </div>
-            <div class="col-lg-6 col-md-6 mb-30">
+            <div class="col-lg-6 col-md-6">
                 <div class="banner-content">
                     <span class="banner-sub-titel"><i class="fas fa-qrcode"></i>{{ __(@$banner->value->language->$lang->title) }}</span>
                     <h1 class="banner-title">{{ __(@$banner->value->language->$lang->heading) }}</h1>
                     <p>{{ __(@$banner->value->language->$lang->sub_heading) }}</p>
-                    <div class="app-btn-area">
+                    <h4 class="">Connexion</h4>
+                    <div class="banner-btn">
+                        <a href="{{ setRoute('admin.login') }}" class="btn--base"><i class="las la-user-plus me-1"></i>{{ __("Admin") }}</a>
+                        <a href="{{ setRoute('agent.login') }}" class="btn--base active"><i class="las la-key me-1"></i>{{ __("Agent") }}</a>
+                    </div>
+                    {{--  <div class="app-btn-area">
                         <a href="{{ @$app_urls->android_url }}" class="app-btn" target="_blank">
                             <div class="icon">
                                 <img src="{{ asset('public/frontend/') }}/images/app/play-store.png" alt="play-store">
@@ -49,9 +54,10 @@
                                 <h5 class="title">{{ __("Apple Store") }}</h5>
                             </div>
                         </a>
-                    </div>
+                    </div>  --}}
                 </div>
             </div>
+            @include('frontend.partials.how-work')
         </div>
     </div>
 </section>
@@ -63,7 +69,7 @@
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Start Banner floting section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-<section class="banner-floting-section">
+{{--  <section class="banner-floting-section">
     <div class="container">
         <div class="row">
             <div class="col-xl-12">
@@ -84,7 +90,7 @@
             </div>
         </div>
     </div>
-</section>
+</section>  --}}
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     End Banner floting section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
@@ -92,7 +98,7 @@
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Start how it's works section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-@include('frontend.partials.how-work')
+{{--  @include('frontend.partials.how-work')  --}}
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     End how it's works section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
@@ -100,7 +106,7 @@
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Start about section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-@include('frontend.partials.about')
+{{--  @include('frontend.partials.about')  --}}
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     End about section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
@@ -112,11 +118,11 @@
     End service section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 
-@include('frontend.partials.security-section')
+{{--  @include('frontend.partials.security-section')  --}}
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Start map section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-@include('frontend.partials.map-section')
+{{--  @include('frontend.partials.map-section')  --}}
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     End map section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
@@ -125,7 +131,7 @@
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Start why choose us section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-@include('frontend.partials.choose-section')
+{{--  @include('frontend.partials.choose-section')  --}}
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     End why choose us section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
@@ -133,14 +139,14 @@
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Start testimonial
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-@include('frontend.partials.testimonials')
+{{--  @include('frontend.partials.testimonials')  --}}
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     End testimonial
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Start Brand
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-@include('frontend.partials.brand-section')
+{{--  @include('frontend.partials.brand-section')  --}}
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     End Brand
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->

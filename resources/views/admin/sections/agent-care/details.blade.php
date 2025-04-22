@@ -228,7 +228,7 @@
             <form class="card-form" method="POST" action="{{ setRoute('admin.agents.details.update',$user->username) }}">
                 @csrf
                 <div class="row mb-10-none">
-                    <div class="col-xl-6 col-lg-6 form-group">
+                    <div class="col-xl-4 col-lg-4 form-group">
                         @include('admin.components.form.input',[
                             'label'         => __("first Name")."*",
                             'name'          => "firstname",
@@ -237,11 +237,20 @@
                             'placeholder'   => __("Write Here.."),
                         ])
                     </div>
-                    <div class="col-xl-6 col-lg-6 form-group">
+                    <div class="col-xl-4 col-lg-4 form-group">
                         @include('admin.components.form.input',[
                             'label'         => __("last Name")."*",
                             'name'          => "lastname",
                             'value'         => old("lastname",$user->lastname),
+                            'attribute'     => "required",
+                            'placeholder'   => __("Write Here.."),
+                        ])
+                    </div>
+                    <div class="col-xl-4 col-lg-4 form-group">
+                        @include('admin.components.form.input',[
+                            'label'         => __("Matricule")."*",
+                            'name'          => "matricule",
+                            'value'         => old("matricule",$user->matricule),
                             'attribute'     => "required",
                             'placeholder'   => __("Write Here.."),
                         ])

@@ -35,19 +35,24 @@
                     'group_title'       => __("DEFAULT"),
                     'group_links'       => [
                         [
-                            'title'     => "Setup Currency",
+                            'title'     => "Configuration devise",
                             'route'     => "admin.currency.index",
                             'icon'      => "menu-icon las la-coins",
                         ],
-                        [
+                        {{--  [
                             'title'     => __("Exchange Rate"),
                             'route'     => "admin.exchange.rate.index",
                             'icon'      => "menu-icon las la-wallet",
-                        ],
+                        ],  --}}
                         [
-                            'title'     => "Fees & Charges",
+                            'title'     => "Config. Commissions",
                             'route'     => "admin.trx.settings.index",
                             'icon'      => "menu-icon las la-hand-holding-usd",
+                        ],
+                        [
+                            'title'     => "Ouverture Collecte",
+                            'route'     => "admin.web.settings.index.collect",
+                            'icon'      => "menu-icon las la-door-open",
                         ],
                         {{--  [
                             'title'     => "Virtual Card Api",
@@ -133,32 +138,40 @@
                                 ],
                             ],  --}}
                             [
-                                'title'             => __("withdraw Log"),
+                                'title'             => __("Traitement collectes"),
                                 'icon'              => "menu-icon las la-sign-out-alt",
                                 'links'     => [
                                     [
-                                        'title'     => "Pending Logs",
+                                        'title'     => "Collectes en attente",
                                         'route'     => "admin.money.out.pending",
                                     ],
                                     [
-                                        'title'     => "Completed Logs",
+                                        'title'     => "Collectes validées",
                                         'route'     => "admin.money.out.complete",
                                     ],
                                     [
-                                        'title'     => "Canceled Logs",
+                                        'title'     => "Collectes annulées",
                                         'route'     => "admin.money.out.canceled",
                                     ],
                                     [
-                                        'title'     => "CBS Pending Logs",
+                                        'title'     => "En att. d'intégration",
                                         'route'     => "admin.money.out.cbsPending",
                                     ],
                                     [
-                                        'title'     => "CBS Completed Logs",
+                                        'title'     => "Collecte intégrées",
                                         'route'     => "admin.money.out.cbsCompleted",
                                     ],
                                     [
-                                        'title'     => "All Logs",
+                                        'title'     => "Toutes les collectes",
                                         'route'     => "admin.money.out.index",
+                                    ],
+                                    [
+                                        'title'     => "Montant collecté/Agent",
+                                        'route'     => "admin.money.out.agentcollect",
+                                    ],
+                                    [
+                                        'title'     => "Imports des Soldes",
+                                        'route'     => "admin.soldes.index",
                                     ]
                                 ],
                             ],
@@ -292,9 +305,17 @@
                                 'links'     => [
 
                                     [
-                                        'title'     => __("All Logs"),
+                                        'title'     => "Journal des collectes",
                                         'route'     => "admin.money.in.index",
-                                    ]
+                                    ],
+                                    [
+                                        'title'     => "Journal des charges",
+                                        'route'     => "admin.profit.logs.index",
+                                    ],
+                                    [
+                                        'title'     => "Journal des recharges",
+                                        'route'     => "admin.profit.logs.balance",
+                                    ],
                                 ],
                             ],
                             {{--  [
@@ -364,8 +385,8 @@
                                     ]
                                 ],
                             ],  --}}
-                            [
-                                'title'             => __("Profit Logs"),
+                            {{--  [
+                                'title'             => __("Journaux de profits"),
                                 'icon'              => "menu-icon las la-coins",
                                 'links'     => [
                                     [
@@ -377,7 +398,7 @@
                                         'route'     => "admin.profit.logs.balance",
                                     ],
                                 ],
-                            ],
+                            ],  --}}
                             [
                                 'title'             => __("SMS Logs"),
                                 'icon'              => "menu-icon las la-coins",
@@ -398,66 +419,66 @@
                     'group_links'       => [
                         'dropdown'      => [
                             [
-                                'title'     => __("User Care"),
+                                'title'     => "Gestion des clients",
                                 'icon'      => "menu-icon las la-user-edit",
                                 'links'     => [
                                     [
-                                        'title'     => "Active Users",
+                                        'title'     => "Clients actifs",
                                         'route'     => "admin.users.active",
                                     ],
                                     [
-                                        'title'     => "Email unverified",
+                                        'title'     => "Emails non vérifiés",
                                         'route'     => "admin.users.email.unverified",
                                     ],
 
                                     [
-                                        'title'     => "KYC Unverified",
+                                        'title'     => "KYC Non vérifiés",
                                         'route'     => "admin.users.kyc.unverified",
                                     ],
                                     [
-                                        'title'     => "All Users",
+                                        'title'     => "Tous les clients",
                                         'route'     => "admin.users.index",
                                     ],
-                                    [
-                                        'title'     => "Email To Users",
+                                    {{--  [
+                                        'title'     => "Email To Custumers",
                                         'route'     => "admin.users.email.users",
-                                    ],
+                                    ],  --}}
                                     [
-                                        'title'     => "Banned Users",
+                                        'title'     => "Client bannies",
                                         'route'     => "admin.users.banned",
                                     ]
                                 ],
                             ],
                             [
-                                'title'     => __("Agent Care"),
+                                'title'     =>"Gestion des agents",
                                 'icon'      => "menu-icon las la-user-edit",
                                 'links'     => [
                                     [
-                                        'title'     => "Active Agents",
+                                        'title'     => "Agents Actifs",
                                         'route'     => "admin.agents.active",
                                     ],
                                     [
-                                        'title'     => "Email unverified",
+                                        'title'     => "Emails non vérifiés",
                                         'route'     => "admin.agents.email.unverified",
                                     ],
                                     [
-                                        'title'     => "KYC Unverified",
+                                        'title'     => "KYC non vérifiés",
                                         'route'     => "admin.agents.kyc.unverified",
                                     ],
                                     [
-                                        'title'     => "All Agents",
+                                        'title'     => "Tous les agents",
                                         'route'     => "admin.agents.index",
                                     ],
-                                    [
+                                    {{--  [
                                         'title'     => "Email To Agents",
                                         'route'     => "admin.agents.email.agents",
-                                    ],
+                                    ],  --}}
                                     [
-                                        'title'     => "Banned Agents",
+                                        'title'     => "Agents Bannies",
                                         'route'     => "admin.agents.banned",
                                     ],
                                     [
-                                        'title'     => "Locate Agents",
+                                        'title'     => "Localisation des Agents",
                                         'route'     => "admin.agents.locate",
                                     ]
                                 ],
@@ -494,25 +515,25 @@
                                 ],
                             ],  --}}
                             [
-                                'title'             => __("Admin Care"),
+                                'title'             => "Gestion des Admins",
                                 'icon'              => "menu-icon las la-user-shield",
                                 'links'     => [
                                     [
-                                        'title'     => "All Admin",
+                                        'title'     => "Tous les Admins",
                                         'route'     => "admin.admins.index",
                                     ],
                                     [
-                                        'title'     => "Admin Role",
+                                        'title'     => "Rôle des Admins",
                                         'route'     => "admin.admins.role.index",
                                     ],
                                     [
-                                        'title'     => "Role Permission",
+                                        'title'     => "Habillitations",
                                         'route'     => "admin.admins.role.permission.index",
                                     ],
-                                    [
+                                    {{--  [
                                         'title'     => "Email To Admin",
                                         'route'     => "admin.admins.email.admins",
-                                    ]
+                                    ]  --}}
                                 ],
                             ],
 
@@ -544,7 +565,7 @@
                                     ]
                                 ],
                             ],
-                            [
+                            {{--  [
                                 'title'             => __("App Settings"),
                                 'icon'              => "menu-icon las la-mobile",
                                 'links'     => [
@@ -561,11 +582,11 @@
                                         'route'     => "admin.app.settings.urls",
                                     ],
                                 ],
-                            ],
+                            ],  --}}
                         ],
                     ]
                 ])
-                @include('admin.components.side-nav.link',[
+                {{--  @include('admin.components.side-nav.link',[
                     'route'     => 'admin.module.setting.index',
                     'title'     => __("Setup Module"),
                     'icon'      => "menu-icon las la-box",
@@ -574,7 +595,7 @@
                     'route'     => 'admin.country.restriction.index',
                     'title'     => __("Country Restriction"),
                     'icon'      => "menu-icon las la-box",
-                ])
+                ])  --}}
                 @include('admin.components.side-nav.link',[
                     'route'     => 'admin.languages.index',
                     'title'     => "Languages",
@@ -587,15 +608,15 @@
                     'group_links'       => [
                         'dropdown'      => [
                             [
-                                'title'     => __("Setup Email/SMS/RIB"),
+                                'title'     => __("Serveur messagerie"),
                                 'icon'      => "menu-icon las la-envelope-open-text",
                                 'links'     => [
                                     [
-                                        'title'     => "Email Method",
+                                        'title'     => "Serveur Email",
                                         'route'     => "admin.setup.email.config",
                                     ],
                                     [
-                                        'title'     => "SMS Method",
+                                        'title'     => "Serveur SMS",
                                         'route'     => "admin.setup.sms.config",
                                     ],
                                     {{--  [
@@ -615,40 +636,40 @@
 
                  @include('admin.components.side-nav.link',[
                     'route'     => 'admin.setup.kyc.index',
-                    'title'     => "Setup KYC",
+                    'title'     => "Configuration KYC",
                     'icon'      => "menu-icon las la-clipboard-list",
                 ])
 
 
-                {{--  @if (admin_permission_by_name("admin.setup.sections.section"))
+                @if (admin_permission_by_name("admin.setup.sections.section"))
                     <li class="sidebar-menu-header">{{ __("SETUP WEB CONTENT") }}</li>
                     @php
                         $current_url = URL::current();
 
                         $setup_section_childs  = [
-                            setRoute('admin.setup.sections.section','auth-section'),
-                            setRoute('admin.setup.sections.section','app-section'),
+                            // setRoute('admin.setup.sections.section','auth-section'),
+                            // setRoute('admin.setup.sections.section','app-section'),
                             setRoute('admin.setup.sections.section','banner'),
-                            setRoute('admin.setup.sections.section','banner-floting'),
+                            // setRoute('admin.setup.sections.section','banner-floting'),
                             setRoute('admin.setup.sections.section','work-section'),
-                            setRoute('admin.setup.sections.section','about-section'),
-                            setRoute('admin.setup.sections.section','security-section'),
-                            setRoute('admin.setup.sections.section','overview-section'),
-                            setRoute('admin.setup.sections.section','why-choose-section'),
-                            setRoute('admin.setup.sections.section','brand-section'),
-                            setRoute('admin.setup.sections.section','service-section'),
-                            setRoute('admin.setup.sections.section','faq-section'),
-                            setRoute('admin.setup.sections.section','testimonials-section'),
-                            setRoute('admin.setup.sections.section','category'),
-                            setRoute('admin.setup.sections.section','blog-section'),
-                            setRoute('admin.setup.sections.section','agent-section'),
-                            setRoute('admin.setup.sections.section','agent-app'),
-                            setRoute('admin.setup.sections.section','merchant-section'),
-                            setRoute('admin.setup.sections.section','merchant-app'),
-                            setRoute('admin.setup.sections.section','developer-introduction'),
-                            setRoute('admin.setup.sections.section','developer-faq'),
-                            setRoute('admin.setup.sections.section','contact-us-section'),
-                            setRoute('admin.setup.sections.section','footer-section'),
+                            // setRoute('admin.setup.sections.section','about-section'),
+                            // setRoute('admin.setup.sections.section','security-section'),
+                            // setRoute('admin.setup.sections.section','overview-section'),
+                            // setRoute('admin.setup.sections.section','why-choose-section'),
+                            // setRoute('admin.setup.sections.section','brand-section'),
+                            // setRoute('admin.setup.sections.section','service-section'),
+                            // setRoute('admin.setup.sections.section','faq-section'),
+                            // setRoute('admin.setup.sections.section','testimonials-section'),
+                            // setRoute('admin.setup.sections.section','category'),
+                            // setRoute('admin.setup.sections.section','blog-section'),
+                            // setRoute('admin.setup.sections.section','agent-section'),
+                            // setRoute('admin.setup.sections.section','agent-app'),
+                            // setRoute('admin.setup.sections.section','merchant-section'),
+                            // setRoute('admin.setup.sections.section','merchant-app'),
+                            // setRoute('admin.setup.sections.section','developer-introduction'),
+                            // setRoute('admin.setup.sections.section','developer-faq'),
+                            // setRoute('admin.setup.sections.section','contact-us-section'),
+                            // setRoute('admin.setup.sections.section','footer-section'),
                         ];
                     @endphp
 
@@ -659,27 +680,27 @@
                         </a>
                         <ul class="sidebar-submenu">
                             <li class="sidebar-menu-item">
-                                <a href="{{ setRoute('admin.setup.sections.section','auth-section') }}" class="nav-link @if ($current_url == setRoute('admin.setup.sections.section','auth-section')) active @endif">
+                                {{--  <a href="{{ setRoute('admin.setup.sections.section','auth-section') }}" class="nav-link @if ($current_url == setRoute('admin.setup.sections.section','auth-section')) active @endif">
                                     <i class="menu-icon las la-ellipsis-h"></i>
                                     <span class="menu-title">{{ __("Auth Section") }}</span>
-                                </a>
-                                <a href="{{ setRoute('admin.setup.sections.section','app-section') }}" class="nav-link @if ($current_url == setRoute('admin.setup.sections.section','app-section')) active @endif">
+                                </a>  --}}
+                                {{--  <a href="{{ setRoute('admin.setup.sections.section','app-section') }}" class="nav-link @if ($current_url == setRoute('admin.setup.sections.section','app-section')) active @endif">
                                     <i class="menu-icon las la-ellipsis-h"></i>
                                     <span class="menu-title">{{ __("APP Section") }}</span>
-                                </a>
+                                </a>  --}}
                                 <a href="{{ setRoute('admin.setup.sections.section','banner') }}" class="nav-link @if ($current_url == setRoute('admin.setup.sections.section','banner')) active @endif">
                                     <i class="menu-icon las la-ellipsis-h"></i>
                                     <span class="menu-title">{{ __("Banner Section") }}</span>
                                 </a>
-                                <a href="{{ setRoute('admin.setup.sections.section','banner-floting') }}" class="nav-link @if ($current_url == setRoute('admin.setup.sections.section','banner-floting')) active @endif">
+                                {{--  <a href="{{ setRoute('admin.setup.sections.section','banner-floting') }}" class="nav-link @if ($current_url == setRoute('admin.setup.sections.section','banner-floting')) active @endif">
                                     <i class="menu-icon las la-ellipsis-h"></i>
                                     <span class="menu-title">{{ __("Banner Floting") }}</span>
-                                </a>
+                                </a>  --}}
                                 <a href="{{ setRoute('admin.setup.sections.section','work-section') }}" class="nav-link @if ($current_url == setRoute('admin.setup.sections.section','work-section')) active @endif">
                                     <i class="menu-icon las la-ellipsis-h"></i>
                                     <span class="menu-title">{{ __("Work Section") }}</span>
                                 </a>
-                                <a href="{{ setRoute('admin.setup.sections.section','about-section') }}" class="nav-link @if ($current_url == setRoute('admin.setup.sections.section','about-section')) active @endif">
+                                {{--  <a href="{{ setRoute('admin.setup.sections.section','about-section') }}" class="nav-link @if ($current_url == setRoute('admin.setup.sections.section','about-section')) active @endif">
                                     <i class="menu-icon las la-ellipsis-h"></i>
                                     <span class="menu-title">{{ __("About Section") }}</span>
                                 </a>
@@ -751,12 +772,12 @@
                                 <a href="{{ setRoute('admin.setup.sections.section','footer-section') }}" class="nav-link @if ($current_url == setRoute('admin.setup.sections.section','footer-section')) active @endif">
                                     <i class="menu-icon las la-ellipsis-h"></i>
                                     <span class="menu-title">{{ __("Footer Section") }}</span>
-                                </a>
+                                </a>  --}}
 
                             </li>
                         </ul>
                     </li>
-                @endif  --}}
+                @endif
                 {{--  @include('admin.components.side-nav.link',[
                     'route'     => 'admin.setup.pages.index',
                     'title'     => __("Setup Pages"),
@@ -863,7 +884,7 @@
                 @if (admin_permission_by_name_array($bonus_routes))
                     <li class="sidebar-menu-header">{{ __("BONUS") }}</li>
                 @endif
-                @include('admin.components.side-nav.link',[
+                {{--  @include('admin.components.side-nav.link',[
                     'route'     => 'admin.newsletter.index',
                     'title'     => "Newsletter",
                     'icon'      => "menu-icon las la-newspaper",
@@ -877,7 +898,7 @@
                     'route'     => 'admin.cookie.index',
                     'title'     => __("GDPR Cookie"),
                     'icon'      => "menu-icon las la-cookie-bite",
-                ])
+                ])  --}}
                 @include('admin.components.side-nav.link',[
                     'route'     => 'admin.server.info.index',
                     'title'     => "Server Info",

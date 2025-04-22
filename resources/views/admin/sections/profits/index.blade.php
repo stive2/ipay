@@ -33,14 +33,13 @@
             <table class="custom-table">
                 <thead>
                     <tr>
-                        <th>{{ __("web_trx_id") }}</th>
-                        <th>{{ __("User") }}</th>
-                        <th>{{ __("User Type") }}</th>
-                        <th>{{ __("Transaction Type") }}</th>
-                        <th>{{ __("Charge") }}</th>
-                        <th>{{ __("Agent Profit") }}</th>
-                        <th>{{ __("Platform Profit") }}</th>
-                        <th>{{ __("Time") }}</th>
+                        <th>{{ __("Ref Collecte") }}</th>
+                        <th>{{ __("Agent") }}</th>
+                        <th>{{ __("Matricule") }}</th>
+                        <th>{{ __("Charge Totale") }}</th>
+                        <th>{{ __("Commissions Agent") }}</th>
+                        <th>{{ __("Profits Plateforme") }}</th>
+                        <th>{{ __("Date") }}</th>
 
                     </tr>
                 </thead>
@@ -60,16 +59,8 @@
                             </td>
 
                             <td>
-                                @if(@$item->transactions->user_id != null)
-                                     {{ __("USER") }}
-                                @elseif(@$item->transactions->agent_id != null)
-                                     {{ __("AGENT") }}
-                                @elseif(@$item->transactions->merchant_id != null)
-                                     {{ __("MERCHANT") }}
-                                @endif
-
+                                {{ @$item->transactions->creator->matricule }}
                             </td>
-                            <td>{{ @$item->transactions->type }}</td>
                             <td>{{ number_format(@$item->total_charge,2) }} {{ get_default_currency_code() }}</td>
                             <td>
                                 @if(@$item->transactions->user_id != null)

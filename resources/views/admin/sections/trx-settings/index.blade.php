@@ -5,7 +5,7 @@
 @endpush
 
 @section('page-title')
-    @include('admin.components.page-title',['title' => __($page_title)])
+    @include('admin.components.page-title',['title' => __('Charges & Commissions')])
 @endsection
 
 @section('breadcrumb')
@@ -14,13 +14,13 @@
             'name'  => __("Dashboard"),
             'url'   => setRoute("admin.dashboard"),
         ]
-    ], 'active' => __("Fees & Charges")])
+    ], 'active' => __("Charges & Commissions")])
 @endsection
 
 @section('content')
     <div class="custom-card">
         <div class="card-header">
-            <h6 class="title">{{ __("Commissions Settings") }}</h6>
+            <h6 class="title">Paramètres des commissions</h6>
         </div>
         <div class="card-body">
             <form class="card-form" method="POST" action="{{ setRoute('admin.trx.settings.mincommission.update') }}">
@@ -29,7 +29,7 @@
                 <div class="row mb-10-none">
                     <div class="col-xl-6 col-lg-6 form-group">
                         @include('admin.components.form.input',[
-                            'label'     => __("Minimum payable commission per month*"),
+                            'label'     => "Montant minimum payable par mois",
                             'name'      => 'min_commission_payable',
                             'type'      => 'number',
                             'value'     => old('min_commission_payable',$basic_settings->min_commission_payable ?? ""),
@@ -37,7 +37,7 @@
                     </div>
                     <div class="col-xl-6 col-lg-6 form-group">
                         @include('admin.components.form.input',[
-                            'label'     => __("Minimum amount to collect per month*"),
+                            'label'     => "Montant minimum de collecte mensuel",
                             'name'      => 'min_collect_amount',
                             'type'      => 'number',
                             'value'     => old('min_collect_amount',$basic_settings->min_collect_amount ?? ""),

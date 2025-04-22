@@ -65,10 +65,10 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 
 
-@include('frontend.partials.download-app')
+{{--  @include('frontend.partials.download-app')
 @include('frontend.partials.footer')
 @include('partials.footer-asset')
-@include('frontend.partials.extensions.tawk-to')
+@include('frontend.partials.extensions.tawk-to')  --}}
 
 @stack('script')
 

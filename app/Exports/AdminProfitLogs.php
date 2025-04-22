@@ -13,32 +13,27 @@ class AdminProfitLogs implements FromArray, WithHeadings{
     public function headings(): array
     {
         return [
-            ['SL', 'TRX','USER','USER TYPE','TRANSACTION TYPE','PROFIT AMOUNT','TIME'],
+            ['SL', 'REF','AGENT','MATRICULE','CHARGE TOTALE','COMMISSIONS AGENT', 'PROFIT PLATEFORME', 'DATE'],
         ];
     }
 
     public function array(): array
     {
         return TransactionCharge::with('transactions')
+        ->where('total_charge', '>', 0)
         ->whereHas('transactions', function ($query) {
             $query->whereNotIn('type', [PaymentGatewayConst::TYPEADDMONEY, PaymentGatewayConst::TYPEMONEYOUT,PaymentGatewayConst::TYPEADDSUBTRACTBALANCE]);
         })
         ->latest()->get()->map(function($item,$key){
-            if($item->transactions->user_id != null){
-                $user_type =  "USER"??"";
-            }elseif($item->transactions->agent_id != null){
-                $user_type =  "AGENT"??"";
-            }elseif($item->transactions->merchant_id != null){
-                $user_type =  "MERCHANT"??"";
-            }
             return [
                 'id'    => $key + 1,
-                'trx'  => $item->transactions->trx_id,
-                'user'  =>@$item->transactions->creator->fullname,
-                'user_type'  =>$user_type,
-                'transaction_type'  => $item->transactions->type,
-                'profit_amount'  =>  get_amount($item->total_charge,get_default_currency_code(),4),
-                'time'  =>   $item->created_at->format('d-m-y h:i:s A'),
+                'ref'  => $item->transactions->trx_id,
+                'agent'  =>@$item->transactions->creator->fullname,
+                'matricule'  =>@$item->transactions->creator->matricule,
+                'charge_totale'  => get_amount($item->total_charge,null,4),
+                'commissions_agent'  =>  get_amount(@$item->transactions->details->charges->agent_total_commission,null,4),
+                'profit_plateforme'  =>  get_amount((@$item->total_charge - @$item->transactions->details->charges->agent_total_commission),null,4),
+                'date'  =>   $item->created_at->format('d-m-y h:i:s A'),
             ];
          })->toArray();
 

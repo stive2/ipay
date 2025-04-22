@@ -25,22 +25,42 @@
             @if(count($transactions) > 0)
                 @if(Route::currentRouteName() == "admin.money.out.pending")
                     <div class="table-btn-area">
-                        <button type="button" class="btn btn--base approvedBtn">{{ __("approve") }} All</button>
+                        <button type="button" class="btn btn--base approvedBtn">{{ __("Tout valider") }}</button>
                     </div>
-                    <div class="table-btn-area">
-                        <a href="{{ setRoute('admin.money.out.export.data') }}" class="btn--base"><i class="fas fa-download me-1"></i>{{ __("Export Data") }}</a>
-                    </div>
+                    <button type="button" class="btn btn--base filterBtnP">{{ __("Exporter") }}</button>
+                    {{--  <div class="table-btn-area">
+                        <a href="{{ setRoute('admin.money.out.export.pending') }}" class="btn--base"><i class="fas fa-download me-1"></i>{{ __("Export Data") }}</a>
+                    </div>  --}}
+                @elseif(Route::currentRouteName() == "admin.money.out.complete")
+                    <button type="button" class="btn btn--base filterBtnV">{{ __("Exporter") }}</button>
+                    {{--  <div class="table-btn-area">
+                        <a href="{{ setRoute('admin.money.out.export.validated') }}" class="btn--base"><i class="fas fa-download me-1"></i>{{ __("Export Data") }}</a>
+                    </div>  --}}
+                @elseif(Route::currentRouteName() == "admin.money.out.canceled")
+                    <button type="button" class="btn btn--base filterBtnC">{{ __("Exporter") }}</button>
+                    {{--  <div class="table-btn-area">
+                        <a href="{{ setRoute('admin.money.out.export.rejected') }}" class="btn--base"><i class="fas fa-download me-1"></i>{{ __("Export Data") }}</a>
+                    </div>  --}}
                 @elseif(Route::currentRouteName() == "admin.money.out.cbsPending")
                     <div class="table-btn-area">
-                        <button type="button" class="btn btn--base integratedBtn">{{ __("Set All as integated") }}</button>
+                        <button type="button" class="btn btn--base integratedBtn bg--danger">{{ __("Marquer comme intégré au CBS") }}</button>
                     </div>
                     <div class="table-btn-area">
-                        <a href="{{ setRoute('admin.money.out.export.cbspending') }}" class="btn--base"><i class="fas fa-download me-1"></i>{{ __("Export Data") }}</a>
+                        <button type="button" class="btn btn--base filterBtn">{{ __("Exporter") }}</button>
                     </div>
+                    {{--  <div class="table-btn-area">
+                        <a href="{{ setRoute('admin.money.out.export.cbspending') }}" class="btn--base"><i class="fas fa-download me-1"></i>{{ __("Fichier d'intégration") }}</a>
+                    </div>  --}}
+                @elseif(Route::currentRouteName() == "admin.money.out.cbsCompleted")
+                    <button type="button" class="btn btn--base filterBtnCC">{{ __("Exporter") }}</button>
+                    {{--  <div class="table-btn-area">
+                        <a href="{{ setRoute('admin.money.out.export.integrated') }}" class="btn--base"><i class="fas fa-download me-1"></i>{{ __("Export Data") }}</a>
+                    </div>  --}}
                 @else
-                    <div class="table-btn-area">
+                    <button type="button" class="btn btn--base filterBtnCE">{{ __("Exporter") }}</button>
+                    {{--  <div class="table-btn-area">
                         <a href="{{ setRoute('admin.money.out.export.data') }}" class="btn--base"><i class="fas fa-download me-1"></i>{{ __("Export Data") }}</a>
-                    </div>
+                    </div>  --}}
                 @endif
 
             @endif
@@ -49,12 +69,13 @@
             <table class="custom-table">
                 <thead>
                     <tr>
-                        <th>{{ __("web_trx_id") }}</th>
-                        <th>{{ __("Full Name") }}</th>
-                        <th>{{ __("Email") }}</th>
-                        <th>{{ __("User Type") }}</th>
-                        <th>{{ __("request Amount") }}</th>
-                        <th>{{ __("Method") }}</th>
+                        <th>{{ __("Ref Collecte") }}</th>
+                        <th>{{ __("Client") }}</th>
+                        <th>{{ __("Phone") }}</th>
+                        <th>{{ __("Matricule") }}</th>
+                        <th>{{ __("N° Compte") }}</th>
+                        <th>{{ __("Montant recu") }}</th>
+                        {{--  <th>{{ __("Method") }}</th>  --}}
                         <th>{{ __(("Status")) }}</th>
                         <th>{{ __("Time") }}</th>
                         <th>{{__("action")}}</th>
@@ -75,21 +96,23 @@
                                 @endif
                             </td>
                             <td>
-                               {{ $item->creator->email ?? '' }}
+                               {{ $item->creator->full_mobile ?? '' }}
                             </td>
                             <td>
-                                @if($item->user_id != null)
+                                {{--  @if($item->user_id != null)
                                      {{ __("USER") }}
                                 @elseif($item->agent_id != null)
                                      {{ __("AGENT") }}
                                 @elseif($item->merchant_id != null)
                                      {{ __("MERCHANT") }}
-                                @endif
-
+                                @endif  --}}
+                                {{ $item->creator->matricule ?? '' }}
                             </td>
-
+                            <td>
+                                {{ $item->creator->rib ?? '' }}
+                             </td>
                             <td>{{ number_format($item->request_amount,2) }} {{ get_default_currency_code() }}</td>
-                            <td><span class="text--info">{{ @$item->currency->name }}</span></td>
+                            {{--  <td><span class="text--info">{{ @$item->currency->name }}</span></td>  --}}
                             <td>
                                 <span class="{{ $item->stringStatus->class }}">{{ __($item->stringStatus->value) }}</span>
                             </td>
@@ -167,20 +190,291 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="filterModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header p-3" id="integratedModalLabel">
+                <h5 class="modal-title">{{ __("Selectionner l'agent et la date") }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form class="modal-form" action="{{ setRoute('admin.money.out.export.cbspending') }}" method="POST">
+                    @csrf
+                    @method("POST")
+
+                    {{-- Agent Selector --}}
+                    <div class="col-xl-12 col-lg-12 form-group">
+                        <label for="agent_id">{{ __("Sélectionner l'agent") }} <span>*</span></label>
+                        <select name="agent_id" id="agent_id" class="form--control select2-auto-tokenize" required>
+                            <option disabled selected>{{ __("Select Agent") }}</option>
+                            <option value="0">{{ __("Tous les agents") }}</option>
+                            @foreach ($agents ?? [] as $item)
+                                <option value="{{ $item->id }}">{{ $item->firstname }} {{ $item->lastname }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Date Selector --}}
+                    <div class="col-xl-12 col-lg-12 form-group mt-3">
+                        <label for="filter_date">{{ __("Date de collecte") }} <span>*</span></label>
+                        <input type="date" name="filter_date" id="filter_date" class="form--control" value="{{ now()->format('Y-m-d') }}" required>
+                    </div>
+
+                    <div class="modal-footer mt-4">
+                        <button type="button" class="btn btn--danger" data-bs-dismiss="modal">{{ __("Cancel") }}</button>
+                        <button type="submit" class="btn btn--base btn-loading">{{ __("Extract") }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="filterModalP" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header p-3" id="integratedModalLabel">
+                <h5 class="modal-title">{{ __("Selectionner l'agent et la date") }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form class="modal-form" action="{{ setRoute('admin.money.out.export.pending') }}" method="POST">
+                    @csrf
+                    @method("POST")
+
+                    {{-- Agent Selector --}}
+                    <div class="col-xl-12 col-lg-12 form-group">
+                        <label for="agent_id">{{ __("Sélectionner l'agent") }} <span>*</span></label>
+                        <select name="agent_id" id="agent_id" class="form--control select2-auto-tokenize" required>
+                            <option disabled selected>{{ __("Select Agent") }}</option>
+                            <option value="0">{{ __("Tous les agents") }}</option>
+                            @foreach ($agents ?? [] as $item)
+                                <option value="{{ $item->id }}">{{ $item->firstname }} {{ $item->lastname }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Date Selector --}}
+                    <div class="col-xl-12 col-lg-12 form-group mt-3">
+                        <label for="filter_date">{{ __("Date de collecte") }} <span>*</span></label>
+                        <input type="date" name="filter_date" id="filter_date" class="form--control" value="{{ now()->format('Y-m-d') }}" required>
+                    </div>
+
+                    <div class="modal-footer mt-4">
+                        <button type="button" class="btn btn--danger" data-bs-dismiss="modal">{{ __("Cancel") }}</button>
+                        <button type="submit" class="btn btn--base btn-loading">{{ __("Extract") }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="filterModalV" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header p-3" id="integratedModalLabel">
+                <h5 class="modal-title">{{ __("Selectionner l'agent et la date") }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form class="modal-form" action="{{ setRoute('admin.money.out.export.validated') }}" method="POST">
+                    @csrf
+                    @method("POST")
+
+                    {{-- Agent Selector --}}
+                    <div class="col-xl-12 col-lg-12 form-group">
+                        <label for="agent_id">{{ __("Sélectionner l'agent") }} <span>*</span></label>
+                        <select name="agent_id" id="agent_id" class="form--control select2-auto-tokenize" required>
+                            <option disabled selected>{{ __("Select Agent") }}</option>
+                            <option value="0">{{ __("Tous les agents") }}</option>
+                            @foreach ($agents ?? [] as $item)
+                                <option value="{{ $item->id }}">{{ $item->firstname }} {{ $item->lastname }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Date Selector --}}
+                    <div class="col-xl-12 col-lg-12 form-group mt-3">
+                        <label for="filter_date">{{ __("Date de collecte") }} <span>*</span></label>
+                        <input type="date" name="filter_date" id="filter_date" class="form--control" value="{{ now()->format('Y-m-d') }}" required>
+                    </div>
+
+                    <div class="modal-footer mt-4">
+                        <button type="button" class="btn btn--danger" data-bs-dismiss="modal">{{ __("Cancel") }}</button>
+                        <button type="submit" class="btn btn--base btn-loading">{{ __("Extract") }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="filterModalC" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header p-3" id="integratedModalLabel">
+                <h5 class="modal-title">{{ __("Selectionner l'agent et la date") }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form class="modal-form" action="{{ setRoute('admin.money.out.export.rejected') }}" method="POST">
+                    @csrf
+                    @method("POST")
+
+                    {{-- Agent Selector --}}
+                    <div class="col-xl-12 col-lg-12 form-group">
+                        <label for="agent_id">{{ __("Sélectionner l'agent") }} <span>*</span></label>
+                        <select name="agent_id" id="agent_id" class="form--control select2-auto-tokenize" required>
+                            <option disabled selected>{{ __("Select Agent") }}</option>
+                            <option value="0">{{ __("Tous les agents") }}</option>
+                            @foreach ($agents ?? [] as $item)
+                                <option value="{{ $item->id }}">{{ $item->firstname }} {{ $item->lastname }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Date Selector --}}
+                    <div class="col-xl-12 col-lg-12 form-group mt-3">
+                        <label for="filter_date">{{ __("Date de collecte") }} <span>*</span></label>
+                        <input type="date" name="filter_date" id="filter_date" class="form--control" value="{{ now()->format('Y-m-d') }}" required>
+                    </div>
+
+                    <div class="modal-footer mt-4">
+                        <button type="button" class="btn btn--danger" data-bs-dismiss="modal">{{ __("Cancel") }}</button>
+                        <button type="submit" class="btn btn--base btn-loading">{{ __("Extract") }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="filterModalCC" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header p-3" id="integratedModalLabel">
+                <h5 class="modal-title">{{ __("Selectionner l'agent et la date") }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form class="modal-form" action="{{ setRoute('admin.money.out.export.integrated') }}" method="POST">
+                    @csrf
+                    @method("POST")
+
+                    {{-- Agent Selector --}}
+                    <div class="col-xl-12 col-lg-12 form-group">
+                        <label for="agent_id">{{ __("Sélectionner l'agent") }} <span>*</span></label>
+                        <select name="agent_id" id="agent_id" class="form--control select2-auto-tokenize" required>
+                            <option disabled selected>{{ __("Select Agent") }}</option>
+                            <option value="0">{{ __("Tous les agents") }}</option>
+                            @foreach ($agents ?? [] as $item)
+                                <option value="{{ $item->id }}">{{ $item->firstname }} {{ $item->lastname }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Date Selector --}}
+                    <div class="col-xl-12 col-lg-12 form-group mt-3">
+                        <label for="filter_date">{{ __("Date de collecte") }} <span>*</span></label>
+                        <input type="date" name="filter_date" id="filter_date" class="form--control" value="{{ now()->format('Y-m-d') }}" required>
+                    </div>
+
+                    <div class="modal-footer mt-4">
+                        <button type="button" class="btn btn--danger" data-bs-dismiss="modal">{{ __("Cancel") }}</button>
+                        <button type="submit" class="btn btn--base btn-loading">{{ __("Extract") }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="filterModalCE" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header p-3" id="integratedModalLabel">
+                <h5 class="modal-title">{{ __("Selectionner l'agent et la date") }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form class="modal-form" action="{{ setRoute('admin.money.out.export.data') }}" method="POST">
+                    @csrf
+                    @method("POST")
+
+                    {{-- Agent Selector --}}
+                    <div class="col-xl-12 col-lg-12 form-group">
+                        <label for="agent_id">{{ __("Sélectionner l'agent") }} <span>*</span></label>
+                        <select name="agent_id" id="agent_id" class="form--control select2-auto-tokenize" required>
+                            <option disabled selected>{{ __("Select Agent") }}</option>
+                            <option value="0">{{ __("Tous les agents") }}</option>
+                            @foreach ($agents ?? [] as $item)
+                                <option value="{{ $item->id }}">{{ $item->firstname }} {{ $item->lastname }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Date Selector --}}
+                    <div class="col-xl-12 col-lg-12 form-group mt-3">
+                        <label for="filter_date">{{ __("Date de collecte") }} <span>*</span></label>
+                        <input type="date" name="filter_date" id="filter_date" class="form--control" value="{{ now()->format('Y-m-d') }}" required>
+                    </div>
+
+                    <div class="modal-footer mt-4">
+                        <button type="button" class="btn btn--danger" data-bs-dismiss="modal">{{ __("Cancel") }}</button>
+                        <button type="submit" class="btn btn--base btn-loading">{{ __("Extract") }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('script')
 <script>
     (function ($) {
        "use strict";
-       $('.approvedBtn').on('click', function () {
-           var modal = $('#approvedModal');
-           modal.modal('show');
-       });
-       $('.integratedBtn').on('click', function () {
-        var modal = $('#integratedModal');
-        modal.modal('show');
-    });
+        $('.approvedBtn').on('click', function () {
+            var modal = $('#approvedModal');
+            modal.modal('show');
+        });
+        $('.integratedBtn').on('click', function () {
+            var modal = $('#integratedModal');
+            modal.modal('show');
+        });
+        $('.filterBtn').on('click', function () {
+            var modal = $('#filterModal');
+            modal.modal('show');
+        });
+        $('.filterBtnP').on('click', function () {
+            var modal = $('#filterModalP');
+            modal.modal('show');
+        });
+        $('.filterBtnV').on('click', function () {
+            var modal = $('#filterModalV');
+            modal.modal('show');
+        });
+        $('.filterBtnC').on('click', function () {
+            var modal = $('#filterModalC');
+            modal.modal('show');
+        });
+        $('.filterBtnCC').on('click', function () {
+            var modal = $('#filterModalCC');
+            modal.modal('show');
+        });
+        $('.filterBtnCE').on('click', function () {
+            var modal = $('#filterModalCE');
+            modal.modal('show');
+        });
    })(jQuery);
 </script>
 @endpush

@@ -47,11 +47,11 @@ class SendVerifyCode extends Notification
         $code = $this->code;
         $username  = explode('@',$this->email);
         return (new MailMessage)
-                    ->greeting(__("Hello")." ".@$username[0]." !")
+                    ->greeting(__("Hello")." ".@$username." !")
                     ->subject(__("Verification Code ( Register )"))
-                    ->line(__('You are trying to verify code for register.'))
-                    ->line(__("Here is your OTP").": " . $code)
-                    ->line(__('Thank you for using our application!'));
+                    ->line(__('Votre compte a été crée.'))
+                    ->line(__("Votre mot de passe ").": " . $code)
+                    ->line(__('Cordialement!'));
     }
 
     /**

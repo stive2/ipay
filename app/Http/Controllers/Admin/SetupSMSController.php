@@ -7,7 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\GlobalController;
 use App\Models\Admin\BasicSettings;
 use App\Models\SmsNotification;
+use App\Models\Soldes;
 use App\Notifications\Admin\SendTestMail;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -41,6 +43,12 @@ class SetupSMSController extends Controller
             'page_title',
             'sms'
         ));
+    }
+
+    public function exportSMS()
+    {
+        $file_name = now()->format('Y-m-d_H:i:s') . "_SMS_Notification_Logs" . '.xlsx';
+        return Excel::download(new SMSNotificationExport, $file_name);
     }
 
     /**
@@ -85,12 +93,6 @@ class SetupSMSController extends Controller
         return back()->with(['success' => [__("Information updated successfully!")]]);
     }
 
-    public function exportSMS()
-    {
-        $file_name = now()->format('Y-m-d_H:i:s') . "_SMS_Notification_Logs" . '.xlsx';
-        return Excel::download(new SMSNotificationExport, $file_name);
-    }
-
     public function sendTestSMS(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -103,8 +105,9 @@ class SetupSMSController extends Controller
             'recipient' => $validated['recipient'],
             'message'   => "Ceci est un sms de test provenant de IPAY",
         ];
+        $data = GlobalController::send_sms($data);
         try {
-            if (GlobalController::send_sms($data) != false) {
+            if ($data['status'] == '1') {
                 return back()->with(['success' => [__("Email send successfully!")]]);
             } else {
                 return back()->with(['error' => [__("Echec de l'envoie.")]]);
@@ -113,5 +116,25 @@ class SetupSMSController extends Controller
             return back()->with(['error' => [__("Something went wrong! Please try again.")]]);
         }
         return back()->with(['success' => [__("Email send successfully!")]]);
+    }
+
+    static function sendSoldes() {
+        $soldes = Soldes::join('users', 'users.matricule', 'soldes.matricule')
+                        ->distinct()
+                        ->where('date', Carbon::today())
+                        ->get(['soldes.*', 'users.full_mobile'])->toArray();
+
+        foreach($soldes as $row => $solde){
+            try {
+                $dataSend = [
+                    'recipient' => $solde['full_mobile'],
+                    'message'   => "Le solde de votre compte de collecte (".$solde['compte'].
+                            ") a la date du " . Carbon::parse($solde['date'])->toDateTimeString(). " est de ". getAmount($solde['solde'], 2),
+                ];
+
+                GlobalController::send_sms($dataSend);
+            } catch (Exception $e) {
+            }
+        }
     }
 }

@@ -2,11 +2,14 @@
     <thead>
         <tr>
             <th></th>
-            <th>{{ __("Username") }}</th>
-            <th>ID</th>
-            <th>RIB</th>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Email</th>
+            <th>{{ __("Matricule") }}</th>
+            <th>Telephone</th>
+            <th>N° de compte</th>
             <th>Type</th>
-            <th>{{ __("email Verification") }}</th>
+            {{--  <th>{{ __("email Verification") }}</th>  --}}
             <th>{{__("Status") }}</th>
             <th>{{__("action")}}</th>
         </tr>
@@ -19,27 +22,29 @@
                         <li><img src="{{ $item->userImage }}" alt="user"></li>
                     </ul>
                 </td>
-                <td><span>{{ $item->username }}</span></td>
+                <td><span>{{ $item->firstname }}</span></td>
+                <td><span>{{ $item->lastname }}</span></td>
                 <td>{{ $item->email }}</td>
+                <td>{{ $item->matricule }}</td>
+                <td>{{ $item->full_mobile }}</td>
                 <td>{{ $item->rib ?? "-" }}</td>
                 <td>
                     @if ($item->transitional == "0")
-                        Current
+                        Compte classic
                     @else
-                        Transitional
+                        Compte de collecte
                     @endif
-                    account
                 </td>
                 <td>
                     <span class="{{ $item->emailStatus->class }}">{{ __($item->emailStatus->value) }}</span>
                 </td>
-                <td>
+                {{--  <td>
                     @if (Route::currentRouteName() == "admin.users.kyc.unverified")
                         <span class="{{ $item->kycStringStatus->class }}">{{ __($item->kycStringStatus->value ) }}</span>
                     @else
                         <span class="{{ $item->stringStatus->class }}">{{ __($item->stringStatus->value) }}</span>
                     @endif
-                </td>
+                </td>  --}}
                 <td>
                     @if (Route::currentRouteName() == "admin.users.kyc.unverified")
                         @include('admin.components.link.info-default',[

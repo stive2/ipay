@@ -6,6 +6,7 @@ use App\Constants\GlobalConst;
 use App\Constants\NotificationConst;
 use App\Constants\PaymentGatewayConst;
 use App\Events\Admin\NotificationEvent;
+use App\Exports\CustumerExport;
 use Exception;
 use App\Models\User;
 use App\Models\UserLoginLog;
@@ -29,6 +30,10 @@ use App\Notifications\Kyc\Rejected;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Jenssegers\Agent\Agent;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\CustumerImport;
+use App\Imports\CustumerUpdate;
+use App\Models\Admin\Currency;
 
 class UserCareController extends Controller
 {
@@ -128,6 +133,86 @@ class UserCareController extends Controller
         return view('admin.sections.user-care.email-to-users', compact(
             'page_title',
         ));
+    }
+
+    public function importData(Request $request)
+    {
+        // Validate the incoming request to ensure a file is uploaded
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:4196',
+        ]);
+
+        // Get the file from the request
+        $file = $request->file('file');
+
+        try {
+            // Import the Excel file using the import class
+            Excel::import(new CustumerImport, $file);
+
+            $this->registered();
+            // Return a response after the import is complete
+            return redirect()->back()->with('success', 'Customers imported successfully.');
+        } catch (Exception $e) {
+            // return $e->getMessage();
+            return back()->with(['error' => [__($e->getMessage())]]);
+        }
+    }
+
+    public function updateData(Request $request)
+    {
+        // Validate the incoming request to ensure a file is uploaded
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:4196',
+        ]);
+
+        // Get the file from the request
+        $file = $request->file('file');
+
+        try {
+            // Import the Excel file using the import class
+            Excel::import(new CustumerUpdate, $file);
+
+            $this->registered();
+            // Return a response after the import is complete
+            return redirect()->back()->with('success', 'Customers updated successfully.');
+        } catch (Exception $e) {
+            // return $e->getMessage();
+            return back()->with(['error' => [__($e->getMessage())]]);
+        }
+    }
+
+    protected function registered()
+    {
+        $usersWithoutWallet = User::leftJoin('user_wallets', 'users.id', '=', 'user_wallets.user_id')
+                    ->whereNull('user_wallets.user_id')
+                    ->select('users.*')
+                    ->get();
+                    // ->toArray();
+
+        foreach($usersWithoutWallet as $row => $user) {
+            $this->createUserWallets($user);
+        }
+    }
+
+    protected function createUserWallets($user){
+        $currencies = Currency::active()->roleHasOne()->pluck("id")->toArray();
+        $wallets = [];
+        foreach($currencies as $currency_id) {
+            $wallets[] = [
+                'user_id'       => $user->id,
+                'currency_id'   => $currency_id,
+                'balance'       => 0,
+                'status'        => true,
+                'created_at'    => now(),
+            ];
+        }
+
+        UserWallet::insert($wallets);
+    }
+
+    public function exportData(){
+        $file_name = now()->format('Y-m-d_H:i:s') . "_Clients".'.xlsx';
+        return Excel::download(new CustumerExport, $file_name);
     }
 
     /**
@@ -233,6 +318,7 @@ class UserCareController extends Controller
         $validator = Validator::make($request->all(), [
             'username'              => "required|exists:users,username",
             'firstname'             => "required|string|max:60",
+            'matricule'             => "required|string|max:60",
             'lastname'              => "required|string|max:60",
             'mobile_code'           => "required|string|max:10",
             'mobile'                => "required|string|max:20",
@@ -240,6 +326,7 @@ class UserCareController extends Controller
             'country'               => "nullable|string|max:50",
             'state'                 => "nullable|string|max:50",
             'city'                  => "nullable|string|max:50",
+            'rib'                   => "required|string",
             'zip_code'              => "nullable|numeric|max_digits:8",
             'email_verified'        => 'required|boolean',
             'two_factor_status'   => 'required|boolean',
@@ -257,6 +344,7 @@ class UserCareController extends Controller
         $validated['mobile_code']       = remove_speacial_char($validated['mobile_code']);
         $validated['mobile']            = remove_speacial_char($validated['mobile']);
         $validated['full_mobile']       = $validated['mobile_code'] . $validated['mobile'];
+        $validated['username']          = make_username($validated['firstname'], $validated['lastname']);
 
         $user = User::where('username', $username)->first();
         if (!$user) return back()->with(['error' => [__("Oops! User not exists")]]);
@@ -267,7 +355,9 @@ class UserCareController extends Controller
             return back()->with(['error' => [__("Something went wrong! Please try again.")]]);
         }
 
-        return back()->with(['success' => [__("Profile Information Updated Successfully!")]]);
+        return redirect()->route("admin.users.index")->with(['success' => [__('Profile Information Updated Successfully!')]]);
+
+        // return back()->with(['success' => [__("Profile Information Updated Successfully!")]]);
     }
 
     public function loginLogs($username)

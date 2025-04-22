@@ -9,39 +9,49 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class MoneyOutTransactionExport implements FromArray, WithHeadings
 {
+    protected $filters;
+
+    public function __construct(array $filters = [])
+    {
+        $this->filters = $filters;
+    }
 
     public function headings(): array
     {
         return [
-            ['SL', 'TRX', 'FULL NAME', 'RIB', 'USER TYPE', 'USER ID', 'AMOUNT', 'CURRENCY', 'CBS TRANSFERT', 'METHOD', 'STATUS', 'TIME'],
+            ['SL', 'REF', 'CLIENT', 'MATRICULE', 'COMPTE', 'AMOUNT', 'CURRENCY', 'STATUS', 'INTEGRE', 'TIME'],
         ];
     }
 
     public function array(): array
     {
-        return Transaction::with(
-            'user:id,firstname,lastname,email,username,full_mobile,rib',
-            'currency:id,name',
-        )->where('type', PaymentGatewayConst::TYPEMONEYOUT)->latest()->get()->map(function ($item, $key) {
-            if ($item->user_id != null) {
-                $user_type =  "USER" ?? "";
-            } elseif ($item->agent_id != null) {
-                $user_type =  "AGENT" ?? "";
-            } elseif ($item->merchant_id != null) {
-                $user_type =  "MERCHANT" ?? "";
-            }
+        $query = Transaction::query()
+                ->where('type', PaymentGatewayConst::TYPEMONEYOUT);
+
+        // Filtrage par date unique (filter_date)
+        if (!empty($this->filters['filter_date'])) {
+            $query->whereDate('created_at', $this->filters['filter_date']);
+        }
+
+        // Filtrage par agent (en général l'agent est relié via user_id ou creator_id)
+        if (!empty($this->filters['agent_id'])) {
+            $query->where('agent_id', $this->filters['agent_id']);
+        }
+
+        return $query->latest()->get()->map(function ($item, $key) {
+
             return [
                 'id'    => $key + 1,
-                'trx'  => $item->trx_id,
-                'full_name'  => $item->creator->fullname,
-                'rib' => $item->user->rib,
-                'user_type'  => $user_type,
-                'user_id'  => $item->creator->email,
+                'ref'  => $item->trx_id,
+                'client'  => $item->creator->fullname,
+                'matricule'  => $item->creator->matricule,
+                // 'telephone'  => $item->creator->full_mobile,
+                // 'email'  => $item->creator->email,
+                'rib' => $item->creator->rib,
                 'amount'  =>  $item->request_amount,
-                'currncy' => get_default_currency_code(), // get_amount(, get_default_currency_code(), 4),
-                'cbsTransfert'  => $item->cbsTransfert,
-                'method'  =>  @$item->currency->name,
+                'currency' => get_default_currency_code(), // get_amount(, get_default_currency_code(), 4),
                 'status'  => __($item->stringStatus->value),
+                'integre'  => __($item->cbsTransfert),
                 'time'  =>   $item->created_at->format('d-m-y h:i:s A'),
             ];
         })->toArray();

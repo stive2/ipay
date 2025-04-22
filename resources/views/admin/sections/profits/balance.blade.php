@@ -34,7 +34,7 @@
                     <tr>
                         <th>{{ __("web_trx_id") }}</th>
                         <th>{{ __("Full Name") }}</th>
-                        <th>{{ __("User Type") }}</th>
+                        <th>{{ __("Matricule") }}</th>
                         <th>{{ __("Email") }}</th>
                         <th>{{ __("Phone") }}</th>
                         <th>{{ __("Amount") }}</th>
@@ -55,14 +55,7 @@
                             @endif
 
                         <td>
-                            @if($item->user_id != null)
-                                 {{ __("USER") }}
-                            @elseif($item->agent_id != null)
-                                 {{ __("AGENT") }}
-                            @elseif($item->merchant_id != null)
-                                 {{ __("MERCHANT") }}
-                            @endif
-
+                            {{ $item->creator->matricule }}
                         </td>
                         <td>
                             {{ $item->creator->email ?? '' }}
@@ -73,11 +66,11 @@
 
                         <td>
                             @if($item->attribute == 'SEND')
-                                -
+                                <span style="color: red"> - {{ number_format($item->request_amount,2) }} {{ get_default_currency_code() }} {{ @$item->currency->name }}</span></td>
                             @else
-                                +
+                                <span style="color: green"> + {{ number_format($item->request_amount,2) }} {{ get_default_currency_code() }} {{ @$item->currency->name }}</span></td>
                             @endif
-                            {{ number_format($item->request_amount,2) }} {{ get_default_currency_code() }} <span class="text--info">{{ @$item->currency->name }}</span></td>
+
 
                         <td>
                             <span>{{ $item->admin()->firstname }} {{ $item->admin()->lastname }}</span>

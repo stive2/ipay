@@ -12,12 +12,12 @@ use App\Constants\PaymentGatewayConst;
 use App\Http\Helpers\Response;
 use App\Models\Agent;
 use App\Models\Blog;
-use App\Models\Merchants\Merchant;
+use Illuminate\Support\Facades\DB;
 use App\Models\Transaction;
 use App\Models\TransactionCharge;
 use App\Models\User;
 use App\Models\UserSupportTicket;
-
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -29,16 +29,37 @@ class DashboardController extends Controller
     public function index()
     {
         $page_title = __("Dashboard");
-        $last_month_start =  date('Y-m-01', strtotime('-1 month', strtotime(date('Y-m-d'))));
-        $last_month_end =  date('Y-m-31', strtotime('-1 month', strtotime(date('Y-m-d'))));
-        $this_month_start = date('Y-m-01');
-        $this_month_end = date('Y-m-d');
-        $this_weak = date('Y-m-d', strtotime('-1 week', strtotime(date('Y-m-d'))));
-        $this_month = date('Y-m-d', strtotime('-1 month', strtotime(date('Y-m-d'))));
-        $this_year = date('Y-m-d', strtotime('-1 year', strtotime(date('Y-m-d'))));
+        $last_month_start =  date('01-m-Y', strtotime('-1 month', strtotime(date('d-m-Y'))));
+        $last_month_end =  date('31-m-Y', strtotime('-1 month', strtotime(date('d-m-Y'))));
+        $this_month_start = date('01-m-Y');
+        $this_month_end = date('d-m-Y');
+        $this_weak = date('d-m-Y', strtotime('-1 week', strtotime(date('d-m-Y'))));
+        $this_month = date('d-m-Y', strtotime('-1 month', strtotime(date('d-m-Y'))));
+        $this_year = date('d-m-Y', strtotime('-1 year', strtotime(date('d-m-Y'))));
 
-        $transactions = Transaction::where('type', PaymentGatewayConst::TYPEADDSUBTRACTBALANCE)->latest()->take(10)->get();
-        $transactions2 = Transaction::where('type', PaymentGatewayConst::MONEYIN)->where('attribute', PaymentGatewayConst::SEND)->latest()->take(10)->get();
+        $transactions = Transaction::where('type', PaymentGatewayConst::TYPEADDSUBTRACTBALANCE)
+                                ->whereDate('created_at', today())->latest()->take(10)->get();
+
+        $recharges = Transaction::where('type', PaymentGatewayConst::TYPEADDSUBTRACTBALANCE)
+                                ->whereDate('created_at', today())->sum('request_amount');
+
+        $transactions2 = Transaction::where('type', PaymentGatewayConst::MONEYIN)->where('attribute', PaymentGatewayConst::SEND)
+                                ->whereDate('created_at', today())
+                                ->latest()->take(10)->get();
+
+        $transactions3 = Transaction::join('agents', 'agents.id', '=', 'transactions.agent_id')
+                        ->where('transactions.type', PaymentGatewayConst::MONEYIN)
+                        ->where('transactions.attribute', PaymentGatewayConst::SEND)
+                        ->whereDate('transactions.created_at', today())
+                        ->groupBy('agents.matricule','agents.username','agents.full_mobile', 'agents.id', 'agents.firstname', 'agents.lastname', 'agents.email') // Important pour certains DB stricts
+                        ->select('agents.matricule','agents.username','agents.full_mobile', 'agents.id', 'agents.firstname', 'agents.lastname', 'agents.email', DB::raw('SUM(transactions.request_amount) as montant'))
+                        ->get();
+
+        $collectes = Transaction::where('type', PaymentGatewayConst::MONEYIN)
+                        ->where('attribute', PaymentGatewayConst::SEND)
+                        ->whereDate('created_at', today())
+                        ->sum('request_amount');
+
 
         // Add Money
         /* $add_money_total_balance = Transaction::toBase()->where('type', PaymentGatewayConst::TYPEADDMONEY)->sum('request_amount');
@@ -76,17 +97,17 @@ class DashboardController extends Controller
         $total_profits = TransactionCharge::toBase()->sum('total_charge');
 
         $this_month_profits = TransactionCharge::toBase()
-            ->whereBetween('created_at', [$this_month_start, $this_month_end])
+            ->whereBetween('created_at', [Carbon::today()->firstOfMonth(), Carbon::today()->lastOfMonth()])
             ->sum('total_charge');
 
         $last_month_profits = TransactionCharge::toBase()
-            ->whereBetween('created_at', [$last_month_start, $last_month_end])
+            ->whereBetween('created_at', [Carbon::today()->subMonth()->firstOfMonth(), Carbon::today()->subMonth()->lastOfMonth()])
             ->sum('total_charge');
 
-        if ($last_month_profits == 0) {
+        if ($total_profits == 0) {
             $profit_percent  = 0;
         } else {
-            $profit_percent = ($this_month_profits / ($this_month_profits + $last_month_profits)) * 100;
+            $profit_percent = ($this_month_profits / ($total_profits)) * 100;
         }
 
         //agent profits
@@ -100,7 +121,7 @@ class DashboardController extends Controller
             ->whereBetween('created_at', [$last_month_start, $last_month_end])
             ->sum('total_charge');
 
-        if ($last_month_profits == 0) {
+        if ($last_month_profits == 0 || ($this_month_agents_profits + $last_month_agents_profits) == 0) {
             $agents_profit_percent  = 0;
         } else {
             $agents_profit_percent = ($this_month_agents_profits / ($this_month_agents_profits + $last_month_agents_profits)) * 100;
@@ -138,11 +159,13 @@ class DashboardController extends Controller
         //Money In
         $total_money_in = Transaction::toBase()->where('type', PaymentGatewayConst::MONEYIN)->where('attribute', PaymentGatewayConst::SEND)->where('status', '!=', 4)->sum('request_amount');
         $completed_money_in =  Transaction::toBase()
+            ->whereBetween('created_at', [Carbon::today()->firstOfMonth(), Carbon::today()->lastOfMonth()])
             ->where('type', PaymentGatewayConst::MONEYIN)
             ->where('attribute', PaymentGatewayConst::SEND)
             ->where('status', 1)
             ->sum('request_amount');
         $pending_money_in =  Transaction::toBase()->where('status', 2)
+            ->whereBetween('created_at', [Carbon::today()->firstOfMonth(), Carbon::today()->lastOfMonth()])
             ->where('type', PaymentGatewayConst::MONEYIN)
             ->where('attribute', PaymentGatewayConst::SEND)
             ->sum('request_amount');
@@ -295,21 +318,25 @@ class DashboardController extends Controller
 
             // Monthley money in
             $money_pending = Transaction::where('type', PaymentGatewayConst::MONEYIN)
+                ->whereBetween('created_at', [Carbon::today()->firstOfMonth(), Carbon::today()->lastOfMonth()])
                 ->where('attribute', PaymentGatewayConst::SEND)
                 ->whereDate('created_at', $start_date)
                 ->where('status', 2)
                 ->count();
             $money_success = Transaction::where('type', PaymentGatewayConst::MONEYIN)
+                ->whereBetween('created_at', [Carbon::today()->firstOfMonth(), Carbon::today()->lastOfMonth()])
                 ->where('attribute', PaymentGatewayConst::SEND)
                 ->whereDate('created_at', $start_date)
                 ->where('status', 1)
                 ->count();
             $money_canceled = Transaction::where('type', PaymentGatewayConst::MONEYIN)
+                ->whereBetween('created_at', [Carbon::today()->firstOfMonth(), Carbon::today()->lastOfMonth()])
                 ->where('attribute', PaymentGatewayConst::SEND)
                 ->whereDate('created_at', $start_date)
                 ->where('status', 4)
                 ->count();
             $money_hold = Transaction::where('type', PaymentGatewayConst::MONEYIN)
+                ->whereBetween('created_at', [Carbon::today()->firstOfMonth(), Carbon::today()->lastOfMonth()])
                 ->where('attribute', PaymentGatewayConst::SEND)
                 ->whereDate('created_at', $start_date)
                 ->where('status', 3)
@@ -454,7 +481,10 @@ class DashboardController extends Controller
             'month_day'        => $month_day,
 
             'transactions'        => $transactions,
-            'transactions2'        => $transactions2
+            'transactions2'        => $transactions2,
+            'transactions3'        => $transactions3,
+            'recharges'        => $recharges,
+            'collectes'        => $collectes
         ];
         session()->remove('adminlog');
         return view('admin.sections.dashboard.index', compact(

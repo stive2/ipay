@@ -9,43 +9,47 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class MoneyOutCBSPendingExport implements FromArray, WithHeadings
 {
+    protected $filters;
+
+    public function __construct(array $filters = [])
+    {
+        $this->filters = $filters;
+    }
 
     public function headings(): array
     {
         return [
-            ['SL', 'TRX', 'FULL NAME', 'RIB', 'USER TYPE', 'USER ID', 'AMOUNT', 'CURRENCY', 'CBS TRANSFERT', 'METHOD', 'STATUS', 'TIME'],
+            ['Compte', 'Libelle', 'Reference', 'Debit', 'Credit','Ref. Lettrage'],
         ];
     }
 
     public function array(): array
     {
-        return Transaction::with(
-            'user:id,firstname,lastname,email,username,full_mobile,rib',
-            'currency:id,name',
-        )->where('type', PaymentGatewayConst::TYPEMONEYOUT)
-            ->where('status', 1)->where('cbsTransfert', 'ND')
-            ->latest()->get()->map(function ($item, $key) {
-                if ($item->user_id != null) {
-                    $user_type =  "USER" ?? "";
-                } elseif ($item->agent_id != null) {
-                    $user_type =  "AGENT" ?? "";
-                } elseif ($item->merchant_id != null) {
-                    $user_type =  "MERCHANT" ?? "";
-                }
-                return [
-                    'id'    => $key + 1,
-                    'trx'  => $item->trx_id,
-                    'full_name'  => $item->creator->fullname,
-                    'rib' => $item->user->rib,
-                    'user_type'  => $user_type,
-                    'user_id'  => $item->creator->email,
-                    'amount'  =>  $item->request_amount,
-                    'currncy' => get_default_currency_code(), // get_amount(, get_default_currency_code(), 4),
-                    'cbsTransfert'  => $item->cbsTransfert,
-                    'method'  =>  @$item->currency->name,
-                    'status'  => __($item->stringStatus->value),
-                    'time'  =>   $item->created_at->format('d-m-y h:i:s A'),
-                ];
-            })->toArray();
+        $query = Transaction::query()
+            ->where('type', PaymentGatewayConst::TYPEMONEYOUT)
+            ->where('status', 1)
+            ->where('cbsTransfert', 'ND');
+
+        // Filtrage par date unique (filter_date)
+        if (!empty($this->filters['filter_date'])) {
+            $query->whereDate('created_at', $this->filters['filter_date']);
+        }
+
+        // Filtrage par agent (en général l'agent est relié via user_id ou creator_id)
+        if (!empty($this->filters['agent_id']) && $this->filters['agent_id'] != 0) {
+            $query->where('agent_id', $this->filters['agent_id']);
+        }
+
+        return $query->latest()->get()->map(function ($item, $key) {
+            return [
+                'compte'       => $item->creator->rib . ' ',
+                'libelle'      => 'Collecte journalière de ' . $item->creator->fullname,
+                'reference'    => $item->trx_id,
+                'debit'        => '0',
+                'credit'       => $item->request_amount ?? '0',
+                'ref_lettrage' => $item->trx_id,
+            ];
+        })->toArray();
     }
+
 }

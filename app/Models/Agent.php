@@ -26,6 +26,7 @@ class Agent extends Authenticatable
         'username' => 'string',
         'store_name' => 'string',
         'email' => 'string',
+        'matricule' => 'string',
         'mobile_code' => 'string',
         'mobile' => 'string',
         'full_mobile' => 'string',
@@ -49,6 +50,7 @@ class Agent extends Authenticatable
         'created_at'           => 'datetime',
         'updated_at'           => 'datetime',
         'type'                 => 'string',
+        'collecte_on'   => 'boolean'
     ];
 
     public function scopeSmsUnverified($query)
@@ -197,9 +199,15 @@ class Agent extends Authenticatable
     public function scopeSearch($query, $data)
     {
         return $query->where(function ($q) use ($data) {
-            $q->where("username", "like", "%" . $data . "%");
-        })->orWhere("email", "like", "%" . $data . "%")->orWhere("full_mobile", "like", "%" . $data . "%");
+            $q->where("username", "like", "%" . $data . "%")
+              ->orWhere("email", "like", "%" . $data . "%")
+              ->orWhere("full_mobile", "like", "%" . $data . "%")
+              ->orWhere("matricule", "like", "%" . $data . "%")
+              ->orWhere("firstname", "like", "%" . $data . "%")
+              ->orWhere("lastname", "like", "%" . $data . "%");
+        });
     }
+
     public function scopeNotAuth($query)
     {
         $query->whereNot("id", auth()->user()->id);

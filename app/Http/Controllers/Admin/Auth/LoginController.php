@@ -43,7 +43,7 @@ class LoginController extends Controller
     protected function validateLogin(Request $request)
     {
         $request->validate([
-            'email'                => 'required|string',
+            'credentials'          => 'required',
             'password'             => 'required|string',
         ]);
     }
@@ -74,7 +74,6 @@ class LoginController extends Controller
         $this->updateInfo($user);
         return redirect()->intended(route('admin.dashboard'));
     }
-
 
     protected function createLoginLog($admin)
     {
@@ -163,6 +162,13 @@ class LoginController extends Controller
      */
     protected function credentials(Request $request)
     {
+        $field_name = "username";
+        if (check_email($request->credentials)) {
+            $field_name = "email";
+        }
+        if (check_phone($request->credentials)) {
+            $field_name = "mobile";
+        }
         $request->merge(['status' => true]);
         return $request->only($this->username(), 'password', 'status');
     }

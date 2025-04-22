@@ -45,7 +45,7 @@
                     <div class="col-lg-12 form-group text-center">
                         <button type="submit" class="btn--base w-100 btn-loading">{{ __("Login Now") }} <i class="las la-arrow-right"></i></button>
                     </div>
-                    @if($basic_settings->user_registration)
+                    {{--  @if($basic_settings->user_registration)
                     <div class="or-area">
                         <span class="or-line"></span>
                         <span class="or-title">{{ __("Or") }}</span>
@@ -56,7 +56,7 @@
                             <label>{{ __("Don't Have An Account?") }} <a href="{{ setRoute('user.register') }}" class="account-control-btn">{{ __("Register Now") }}</a></label>
                         </div>
                     </div>
-                    @endif
+                    @endif  --}}
                 </div>
             </form>
         </div>

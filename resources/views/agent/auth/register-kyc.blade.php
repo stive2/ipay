@@ -21,40 +21,40 @@
                 </a>
             </div>
             <h5 class="title">{{ __("KYC Form") }}</h5>
-            <p>{{ __("Please input all the fild for login to your account to get access to your dashboard.") }}</p>
+            <p>{{ __("Veuillez saisir tous les champs.") }}</p>
             <form class="account-form" action="{{ setRoute('agent.register.submit') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="row ml-b-20">
-                    <div class="col-xl-6 col-lg-6 col-md-6 form-group">
+                    <div class="col-xl-4 col-lg-4 col-md-4 form-group">
                         @include('admin.components.form.input',[
                             'name'          => "firstname",
                           'placeholder'   => __("first Name"),
                             'value'         => old("firstname"),
                         ])
                     </div>
-                    <div class="col-xl-6 col-lg-6 col-md-6 form-group">
+                    <div class="col-xl-4 col-lg-4 col-md-4 form-group">
                         @include('admin.components.form.input',[
                                     'name'          => "lastname",
                                     'placeholder'   => __("last Name"),
                                     'value'         => old("lastname"),
                         ])
                     </div>
-                    {{--  <div class="col-xl-4 col-lg-4 col-md-4 form-group">
+                    <div class="col-xl-4 col-lg-4 col-md-4 form-group">
                         @include('admin.components.form.input',[
-                                    'name'          => "store_name",
-                                    'placeholder'   => __("appLStoreName"),
-                                    'value'         => old("store_name"),
+                                    'name'          => "matricule",
+                                    'placeholder'   => __("Matricule"),
+                                    'value'         => old("matricule"),
                         ])
-                    </div>  --}}
+                    </div>
                     <div class="col-xl-4 col-lg-4 col-md-4 form-group">
                         <select name="country" class="form--control country-select select2-basic" > </select>
                     </div>
                     <div class="col-xl-4 col-lg-4 col-md-4 form-group">
                         <div class="input-group">
                             <div class="input-group-prepend">
-                                <span class="input-group-text copytext">ID</span>
+                                <span class="input-group-text copytext">Email</span>
                             </div>
-                            <input name="email" class="form--control" placeholder="Email" value="{{ old('email',@$email) }}" readonly>
+                            <input type="email" name="email" class="form--control" placeholder="Email" value="{{ old('email',@$email) }}" @if(@$email != null) readonly @endif>
 
                         </div>
                     </div>
@@ -77,14 +77,14 @@
                         <div class="input-group">
                             <div class="input-group-text phone-code">+</div>
                             <input class="phone-code" type="hidden" name="phone_code" value="" />
-                            <input type="text" class="form--control" placeholder="{{ __("enter Phone Number") }}" name="phone" value="">
+                            <input type="number" class="form--control" placeholder="{{ __("enter Phone Number") }}" name="mobile" value="{{ old('mobile',@$mobile) }}" @if(@$mobile != null) readonly @endif>
                         </div>
                     </div>
                     @if($basic_settings->agent_kyc_verification)
                         @include('agent.components.register-kyc',compact("kyc_fields"))
                     @endif
 
-                    <div class="col-lg-6 col-md-4 form-group show_hide_password" id="">
+                    {{--  <div class="col-lg-6 col-md-4 form-group show_hide_password" id="">
                         <input type="password" class="form--control" name="password"placeholder="{{ __('enter Password') }}" required>
                         <a href="javascript:void(0)" class="show-pass"><i class="fa fa-eye-slash" aria-hidden="true"></i></a>
 
@@ -94,7 +94,7 @@
                         <input type="password" class="form--control" name="password_confirmation"placeholder="{{ __('confirm Password') }}" required>
                         <a href="javascript:void(0)" class="show-pass"><i class="fa fa-eye-slash" aria-hidden="true"></i></a>
 
-                    </div>
+                    </div>  --}}
                     @if($basic_settings->agent_agree_policy)
                     <div class="col-lg-12 form-group">
                         <div class="custom-check-group">
@@ -109,7 +109,7 @@
                     <div class="col-lg-12 form-group text-center">
                         <button type="submit" class="btn--base w-100 btn-loading">{{ __("Register") }} <i class="fas fa-arrow-alt-circle-right ms-1"></i></button>
                     </div>
-                    <div class="or-area">
+                    {{--  <div class="or-area">
                         <span class="or-line"></span>
                         <span class="or-title">Or</span>
                         <span class="or-line"></span>
@@ -118,7 +118,7 @@
                         <div class="account-item">
                             <label>{{ __("already Have An Account") }} <a href="{{ setRoute('agent.login') }}" class="account-control-btn">{{ __("Login Now") }}</a></label>
                         </div>
-                    </div>
+                    </div>  --}}
                 </div>
             </form>
         </div>

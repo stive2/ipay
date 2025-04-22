@@ -14,7 +14,7 @@ class AdminRechargeLogs implements FromArray, WithHeadings
     public function headings(): array
     {
         return [
-            ['SL', 'TRX', 'FULL NAME', 'USER TYPE', "EMAIL", 'AMOUNT', 'ADMIN', 'STATUS', 'TIME'],
+            ['SL', 'TRX', 'FULL NAME', 'MATRICULE', "EMAIL", 'NATURE', 'AMOUNT', 'ADMIN', 'STATUS', 'DATE'],
         ];
     }
 
@@ -24,23 +24,24 @@ class AdminRechargeLogs implements FromArray, WithHeadings
             'agent:id,firstname,lastname,email,username,full_mobile',
             'currency:id,name',
         )->where('type', PaymentGatewayConst::TYPEADDSUBTRACTBALANCE)->latest()->get()->map(function ($item, $key) {
-            if ($item->user_id != null) {
-                $user_type =  "USER" ?? "";
-            } elseif ($item->agent_id != null) {
-                $user_type =  "AGENT" ?? "";
-            } elseif ($item->merchant_id != null) {
-                $user_type =  "MERCHANT" ?? "";
+            if ($item->attribute == 'SEND') {
+                $montant = (-1) * $item->request_amount;
+                $nature = 'RETRAIT';
+            } else  {
+                $montant = $item->request_amount;
+                $nature = 'RECHARGE';
             }
             return [
                 'id'    => $key + 1,
                 'trx'  => $item->trx_id,
                 'full_name'  => $item->creator->fullname,
-                'user_type'  =>  $user_type,
+                'matricule'  =>  $item->creator->matricule,
                 'email'  => $item->creator->email,
-                'amount'  =>  get_amount($item->request_amount, get_default_currency_code(), 4),
+                'amount'  =>  get_amount($montant, null, 4),
+                'nature'    => $nature,
                 'admin' => strtoupper($item->admin()->firstname . ' ' . $item->admin()->lastname),
                 'status'  => __($item->stringStatus->value),
-                'time'  =>   $item->created_at->format('d-m-y h:i:s A'),
+                'date'  =>   $item->created_at->format('d-m-y h:i:s A'),
             ];
         })->toArray();
     }

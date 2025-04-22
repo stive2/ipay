@@ -58,6 +58,7 @@ use Illuminate\Http\Request;
 use App\Providers\Admin\BasicSettingsProvider;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\CoordinateController;
+use App\Http\Controllers\SoldesController;
 
 // All Admin Route Is Here
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -211,13 +212,19 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('canceled', 'canceled')->name('canceled');
         Route::get('cbsPending', 'cbsPending')->name('cbsPending');
         Route::get('cbsCompleted', 'cbsCompleted')->name('cbsCompleted');
+        Route::get('agentCollect', 'agentCollect')->name('agentcollect');
         Route::get('details/{id}', 'moneyOutDetails')->name('details');
         Route::put('approved', 'approved')->name('approved');
         Route::get('approved-all', 'approvedAll')->name('approved.all');
         Route::get('integrated-all', 'integratedAll')->name('integrated.all');
         Route::put('rejected', 'rejected')->name('rejected');
-        Route::get('export-data', 'exportData')->name('export.data');
-        Route::get('export-cbs-pending', 'exportCBSPending')->name('export.cbspending');
+        Route::post('export-data', 'exportData')->name('export.data');
+        Route::post('export-pending', 'exportPending')->name('export.pending');
+        Route::post('export-validated', 'exportValidated')->name('export.validated');
+        Route::post('export-rejected', 'exportRejected')->name('export.rejected');
+        Route::post('export-cbs-pending', 'exportCBSPending')->name('export.cbspending');
+        Route::post('export-cbs-integrated', 'exportIntegrated')->name('export.integrated');
+        Route::post('export-agent-collect', 'exportAgentCollect')->name('export.agentcollect');
     });
     // Bill Pay Logs
     Route::controller(SetupBillPayController::class)->prefix('bill-pay')->name('bill.pay.')->group(function () {
@@ -276,6 +283,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('index', 'index')->name('index');
         Route::get('export-data', 'exportData')->name('export.data');
     });
+    // Soldes Imports
+    Route::controller(SoldesController::class)->prefix('soldes')->name('soldes.')->group(function () {
+        Route::get('index', 'index')->name('index');
+        Route::post('import-data', 'importData')->name('import');
+        Route::get('export-data', 'exportData')->name('download');
+        Route::get('envoie-notification', 'sendSoldes')->name('notification');
+    });
     // Money In Logs
     Route::controller(MoneyInController::class)->prefix('money-in')->name('money.in.')->group(function () {
         Route::get('index', 'index')->name('index');
@@ -318,6 +332,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('kyc/reject/{username}', 'kycReject')->name('kyc.reject');
         Route::post('search', 'search')->name('search');
         Route::post('wallet/balance/update/{username}', 'walletBalanceUpdate')->name('wallet.balance.update');
+
+        Route::post('import', 'importData')->name('import');
+        Route::post('update', 'updateData')->name('update');
+        Route::get('download', 'exportData')->name('download');
     });
     // Merchant Care Section
     Route::controller(MerchantCareController::class)->prefix('merchants')->name('merchants.')->group(function () {
@@ -365,6 +383,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('location', 'showGoogleMap')->name('locate');
         Route::get('updateCoordinates', 'updateCoordinates');
         Route::post('auto-wallet/balance/substract', 'autoWalletBalanceUpdate')->name('auto.wallet.balance.substract');
+
+        Route::post('import', 'importData')->name('import');
+        Route::get('download', 'exportData')->name('download');
     });
     // Admin Care Section
     Route::controller(AdminCareController::class)->prefix('admins')->name('admins.')->group(function () {
@@ -403,6 +424,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('image-assets/update', 'imageAssetsUpdate')->name('image.assets.update');
         Route::get('setup-seo', 'setupSeo')->name('setup.seo');
         Route::put('setup-seo/update', 'setupSeoUpdate')->name('setup.seo.update');
+
+        Route::get('open-collect', 'openCollect')->name('open.collect');
+        Route::get('close-collect', 'closeCollect')->name('close.collect');
+        Route::get('index-collection', 'collectionLogs')->name('index.collect');
+        Route::get('export-collect', 'exportCollectionLogs')->name('export.collect');
+        Route::get('open-collect/{agent}', 'openCollectAgent')->name('open.collect.agent');
+        Route::get('close-collect/{agent}', 'closeCollectAgent')->name('close.collect.agent');
     });
     // App Settings Section
     Route::prefix('app-settings')->name('app.settings.')->group(function () {

@@ -23,31 +23,39 @@
                     alt="site-logo">
                </a>
             </div>
-            <h5 class="title">{{ __("Register for an Account Today") }}</h5>
-            <p>{{ __(@$auth_text->value->language->$lang->register_text) }}</p>
+            <h5 class="title">Enroller un client</h5>
+            {{--  <p>{{ __(@$auth_text->value->language->$lang->register_text) }}</p>  --}}
             <form class="account-form" action="{{ route('user.send.code') }}" method="POST">
                 @csrf
                 <div class="row ml-b-20">
 
-                    <div class="col-xl-12 col-lg-12 form-group">
+                    {{--  <div class="col-xl-12 col-lg-12 form-group">
                         @include('admin.components.form.switcher',[
                             'label'         => 'ID*',
                             'name'          => 'type',
                             'value'         => old('type','tel'),
                             'options'       => ['Email' => 'email', 'Tel' => 'tel'],
                         ])
-                    </div>
+                    </div>  --}}
 
                     <div class="col-xl-12 col-lg-12 form-group">
                         <div class="input-group">
                             <div class="input-group-prepend">
-                                <span class="input-group-text copytext"><span>Tel/{{ __("Email") }} </span></span>
+                                <span class="input-group-text copytext"><span>{{ __("ID") }} </span></span>
                             </div>
                              {{--  type="email"  --}}
-                            <input name="email" class="form--control checkUser email" placeholder="{{ __("enter Email Address") }} / {{ __("phone Number") }}" value="{{ old('email') }}">
+                            <input name="id" class="form--control checkUser id" placeholder="{{ __("Email") }} / {{ __("phone Number") }}" value="{{ old('id') }}">
 
                         </div>
                         <small class="text-danger exits"></small>
+                    </div>
+                    <div class="col-xl-12 col-lg-12 form-group">
+                        @include('admin.components.form.switcher',[
+                            'label'         => "Type de compte",
+                            'name'          => 'transitional',
+                            'value'         => old('transitional','1'),
+                            'options'       => ['De collecte' => '1'],
+                        ])
                     </div>
                     @if($basic_settings->agree_policy)
                     <div class="col-lg-12 form-group">
@@ -57,20 +65,12 @@
                         </div>
                     </div>
                     @endif
-                    <div class="col-xl-12 col-lg-12 form-group">
-                        @include('admin.components.form.switcher',[
-                            'label'         => "Type Account",
-                            'name'          => 'transitional',
-                            'value'         => old('transitional','0'),
-                            'options'       => ['Transitional' => '1', 'Classic' => '0'],
-                        ])
-                    </div>
                     <div class="col-lg-12 form-group text-center">
                         <button type="submit" class="btn--base w-100 btn-loading registerBtn">{{ __("Continue") }} </button>
                     </div>
                     <div class="col-lg-12 text-center">
                         <div class="account-item">
-                            <label>{{ __("already Have An Account") }} <a href="{{ setRoute('user.login') }}" class="account-control-btn">{{ __("Login Now") }}</a></label>
+                            <label><a href="{{ setRoute('admin.dashboard') }}" class="account-control-btn">{{ __("Retourner au dashboard") }}</a></label>
                         </div>
                     </div>
                 </div>

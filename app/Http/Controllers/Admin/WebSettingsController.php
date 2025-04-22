@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\CollectExport;
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\Response;
 use App\Models\Admin\BasicSettings;
+use App\Models\Admin\CollectOnoffLogs;
 use App\Models\Admin\SetupKyc;
 use App\Models\Admin\SetupSeo;
+use App\Models\Agent;
 use App\Providers\Admin\BasicSettingsProvider;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class WebSettingsController extends Controller
 {
@@ -60,6 +64,132 @@ class WebSettingsController extends Controller
 
         return back()->with(['success' => [__("Basic settings updated successfully!")]]);
     }
+
+    // Ouverture && Fermeture de la collecte
+    public function openCollect()
+    {
+        $basic_settings = BasicSettings::first();
+        if (!$basic_settings) return back()->with(['error' => [__("Basic settings not found!")]]);
+
+        try {
+            $basic_settings->update(['collecte_on'=>1]);
+            CollectOnoffLogs::create([
+                'action'      => 'Ouverture du front office de la collecte mobile',
+                'admin_id'  => auth()->user()->id,
+                'admin'  => auth()->user()->firstname . ' ' . auth()->user()->lastname,
+            ]);
+
+            /* Agent::where('status', '1')->update([
+                'collecte_on'=>1
+            ]); */
+        } catch (Exception $e) {
+            return back()->with(['error' => [__("Something went wrong! Please try again.")]]);
+        }
+
+        return back()->with(['success' => [__("La collecte est ouverte")]]);
+    }
+
+    public function closeCollect()
+    {
+        $basic_settings = BasicSettings::first();
+        if (!$basic_settings) return back()->with(['error' => [__("Basic settings not found!")]]);
+
+        try {
+            $basic_settings->update(['collecte_on'=>0]);
+            CollectOnoffLogs::create([
+                'action'      => 'Fermeture du front office de la collecte mobile',
+                'admin_id'  => auth()->user()->id,
+                'admin'  => auth()->user()->firstname . ' ' . auth()->user()->lastname,
+            ]);
+            /* Agent::where('status', '1')->update([
+                'collecte_on'=>0
+            ]); */
+        } catch (Exception $e) {
+            return back()->with(['error' => [__("Something went wrong! Please try again.")]]);
+        }
+
+        return back()->with(['success' => [__("La collecte est fermée")]]);
+    }
+
+    public function openCollectAgent(Agent $agent)
+    {
+        if (!$agent) return back()->with(['error' => [__("Agent not found!")]]);
+        /* $basic_settings = BasicSettings::first();
+        if (!$basic_settings->collecte_on) return back()->with(['error' => [__("La collecte est actuellement fermée!")]]); */
+
+        try {
+            $agent->update(['collecte_on'=>1]);
+            CollectOnoffLogs::create([
+                'action'      => 'Ouverture de la collecte mobile pour '. $agent->lastname,
+                'admin_id'  => auth()->user()->id,
+                'agent_id'  => $agent->id,
+                'admin'  => auth()->user()->firstname . ' ' . auth()->user()->lastname,
+                'agent'  => $agent->lastname.' '.$agent->firstname,
+            ]);
+        } catch (Exception $e) {
+            return back()->with(['error' => [__("Something went wrong! Please try again.")]]);
+        }
+
+        return back()->with(['success' => [__("La collecte est ouverte pour ". $agent->lastname)]]);
+    }
+
+    public function closeCollectAgent(Agent $agent)
+    {
+        if (!$agent) return back()->with(['error' => [__("Agent not found!")]]);
+
+        try {
+            $agent->update(['collecte_on'=>0]);
+            CollectOnoffLogs::create([
+                'action'      => 'Fermeture de la collecte mobile pour '. $agent->lastname,
+                'admin_id'  => auth()->user()->id,
+                'agent_id'  => $agent->id,
+                'admin'  => auth()->user()->firstname . ' ' . auth()->user()->lastname,
+                'agent'  => $agent->lastname.' '.$agent->firstname,
+            ]);
+        } catch (Exception $e) {
+            return back()->with(['error' => [__("Something went wrong! Please try again.")]]);
+        }
+
+        return back()->with(['success' => [__("La collecte est fermée pour ". $agent->lastname)]]);
+    }
+
+    static function autoCollect()
+    {
+        $basic_settings = BasicSettings::first();
+        if (!$basic_settings) return back()->with(['error' => [__("Basic settings not found!")]]);
+
+        try {
+            $basic_settings->update(['collecte_on'=>0]);
+            CollectOnoffLogs::create([
+                'action'      => 'Fermeture du front office de la collecte mobile',
+                'admin'  => 'Automatique',
+            ]);
+        } catch (Exception $e) {
+            return back()->with(['error' => [__("Something went wrong! Please try again.")]]);
+        }
+
+        return back()->with(['success' => [__("La collecte est fermée")]]);
+    }
+
+
+    public function collectionLogs()
+    {
+        $page_title = __("Ouverture & Fermeture de la collecte");
+        $logs = CollectOnoffLogs::latest()->paginate(20);
+
+        return view('admin.sections.money-in.collectiononlogs', compact(
+            'page_title',
+            'logs'
+        ));
+    }
+
+    public function exportCollectionLogs()
+    {
+        $file_name = now()->format('Y-m-d_H:i:s') . "_ON_OFF_Collection_Logs" . '.xlsx';
+        return Excel::download(new CollectExport, $file_name);
+    }
+
+    //
     public function basicSettingsUpdateMerchant(Request $request)
     {
         $validator = Validator::make($request->all(), [

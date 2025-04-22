@@ -25,6 +25,7 @@ class User extends Authenticatable
         'lastname' => 'string',
         'username' => 'string',
         'email' => 'string',
+        'matricule' => 'string',
         'mobile_code' => 'string',
         'mobile' => 'string',
         'full_mobile' => 'string',
@@ -33,6 +34,7 @@ class User extends Authenticatable
         'image' => 'string',
         'status' => 'integer',
         'transitional' => 'integer',
+        'solde_cbs' => 'integer',
         'type' => 'string',
         'email_verified_at' => 'datetime',
         'address'           => 'object',
@@ -257,9 +259,17 @@ class User extends Authenticatable
     }
     public function scopeSearch($query, $data)
     {
-        return $query->where(function ($q) use ($data) {
+        /* return $query->where(function ($q) use ($data) {
             $q->where("username", "like", "%" . $data . "%");
-        })->orWhere("email", "like", "%" . $data . "%")->orWhere("full_mobile", "like", "%" . $data . "%");
+        })->orWhere("email", "like", "%" . $data . "%")->orWhere("full_mobile", "like", "%" . $data . "%"); */
+        return $query->where(function ($q) use ($data) {
+            $q->where("username", "like", "%" . $data . "%")
+              ->orWhere("email", "like", "%" . $data . "%")
+              ->orWhere("full_mobile", "like", "%" . $data . "%")
+              ->orWhere("matricule", "like", "%" . $data . "%")
+              ->orWhere("firstname", "like", "%" . $data . "%")
+              ->orWhere("lastname", "like", "%" . $data . "%");
+        });
     }
     public function scopeNotAuth($query)
     {

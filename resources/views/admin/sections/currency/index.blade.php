@@ -22,7 +22,7 @@
             'name'  => __("Dashboard"),
             'url'   => setRoute("admin.dashboard"),
         ]
-    ], 'active' => __("Setup Currency")])
+    ], 'active' => __("Configuration devise")])
 @endsection
 
 @section('content')
@@ -30,7 +30,7 @@
         <div class="table-wrapper">
             @includeUnless($default_currency,'admin.components.alerts.warning',['message' => __("There is no default currency in your system.")])
             <div class="table-header">
-                <h5 class="title">{{ __("Setup Currency") }}</h5>
+                <h5 class="title">{{ __("Configuration devise") }}</h5>
 
             </div>
             <div class="table-responsive">

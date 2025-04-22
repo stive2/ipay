@@ -67,6 +67,74 @@ class LoginController extends Controller
         }
     }
 
+    public function login2(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|max:50',
+            // 'password' => 'required|min:6',
+        ]);
+
+        if ($validator->fails()) {
+            $error =  ['error' => $validator->errors()->all()];
+            return ApiHelpers::validation($error);
+        }
+        $user = Agent::where('email', $request->email)->first();
+        if (!$user) {
+            $error = ['error' => [__("Agent doesn't exists.")]];
+            return ApiHelpers::validation($error);
+        }
+        // if (Hash::check($request->password, $user->password)) {
+            if ($user->status == 0) {
+                $error = ['error' => [__('Account Has been Suspended')]];
+                return ApiHelpers::validation($error);
+            }
+            $user->two_factor_verified = false;
+            $user->save();
+            /* $this->refreshUserWallets($user);
+            $this->createLoginLog($user);
+            $this->createQr($user); */
+            $token = $user->createToken('agent_token')->accessToken;
+            $data = ['token' => $token, 'agent' => $user];
+            $message =  ['success' => [__('Login Successful')]];
+            return ApiHelpers::success($data, $message);
+        /* } else {
+            $error = ['error' => [__('Incorrect Password')]];
+            return ApiHelpers::error($error);
+        } */
+    }
+
+    public function loginWithEmail(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|max:50'
+        ]);
+
+        if ($validator->fails()) {
+            $error =  ['error' => $validator->errors()->all()];
+            return ApiHelpers::validation($error);
+        }
+        $user = Agent::where('email', $request->email)->first();
+        if (!$user) {
+            $error = ['error' => [__("Agent doesn't exists.")]];
+            return ApiHelpers::validation($error);
+        }
+
+        if ($user->status == 0) {
+            $error = ['error' => [__('Account Has been Suspended')]];
+            return ApiHelpers::validation($error);
+        }
+
+        $user->two_factor_verified = false;
+        $user->save();
+        $this->refreshUserWallets($user);
+        $this->createLoginLog($user);
+        $this->createQr($user);
+        $token = $user->createToken('agent_token')->accessToken;
+        $data = ['token' => $token, 'agent' => $user,];
+        $message =  ['success' => [__('Login Successful')]];
+        return ApiHelpers::success($data, $message);
+    }
+
     public function register(Request $request)
     {
         $basic_settings = $this->basic_settings;

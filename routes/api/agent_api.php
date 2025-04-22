@@ -73,6 +73,8 @@ Route::prefix('agent')->group(function () {
         Route::post('resend/otp', [AuthorizationController::class, "resendEmailOtp"]);
     });
     Route::post('login', [LoginController::class, 'login']);
+    Route::post('login2', [LoginController::class, 'login2']);
+    Route::post('loginHard', [LoginController::class, 'loginWithEmail']);
     Route::post('register', [LoginController::class, 'register'])->middleware(['agent.registration.permission']);
     //forget password for email
     Route::prefix('forget')->group(function () {

@@ -161,12 +161,12 @@
                             <li class="bg--base one">{{ __("Full Name") }}: <span>{{ $user->fullname }}</span></li>
                             <li class="bg--info two">RIB: <span>{{ $user->rib ?? "-" }}</span></li>
                             <li class="bg--success three">ID: <span>
-                                {{ $user->email }} (
+                                {{ $user->username }} {{--  (
                                 @if ($user->transitional == "0")
                                     Current
                                 @else
                                     Transitional
-                                @endif account)
+                                @endif account)  --}}
                                 </span></li>
                             <li class="bg--warning four">{{__("Status") }}: <span>{{ __($user->stringStatus->value) }}</span></li>
                             <li class="bg--danger five">{{ __("Last Login") }}: <span>{{ $user->lastLogin }}</span></li>
@@ -185,7 +185,7 @@
             <form class="card-form" method="POST" action="{{ setRoute('admin.users.details.update',$user->username) }}">
                 @csrf
                 <div class="row mb-10-none">
-                    <div class="col-xl-6 col-lg-6 form-group">
+                    <div class="col-xl-4 col-lg-4 form-group">
                         @include('admin.components.form.input',[
                             'label'         => __("first Name")."*",
                             'name'          => "firstname",
@@ -194,7 +194,7 @@
                             'placeholder'   =>  __("Write Here.."),
                         ])
                     </div>
-                    <div class="col-xl-6 col-lg-6 form-group">
+                    <div class="col-xl-4 col-lg-4 form-group">
                         @include('admin.components.form.input',[
                             'label'         => __("last Name")."*",
                             'name'          => "lastname",
@@ -203,7 +203,16 @@
                             'placeholder'   => __("Write Here.."),
                         ])
                     </div>
-                    <div class="col-xl-6 col-lg-6 form-group">
+                    <div class="col-xl-4 col-lg-4 form-group">
+                        @include('admin.components.form.input',[
+                            'label'         => __("Matricule")."*",
+                            'name'          => "matricule",
+                            'value'         => old("matricule",$user->matricule),
+                            'attribute'     => "required",
+                            'placeholder'   => __("Write Here.."),
+                        ])
+                    </div>
+                    <div class="col-xl-4 col-lg-4 form-group">
                         <label>{{ __("phone Number") }}<span>*</span></label>
                         <div class="input-group">
                             <div class="input-group-text phone-code">+{{ $user->mobile_code }}</div>
@@ -216,7 +225,15 @@
                             </span>
                         @enderror
                     </div>
-                    <div class="col-xl-6 col-lg-6 form-group">
+                    <div class="col-xl-4 col-lg-4 form-group">
+                        @include('admin.components.form.input',[
+                            'label'         => __("Account Number"),
+                            'name'          => 'rib',
+                            'value'         => old("rib",$user->rib ?? ""),
+                            'placeholder'   =>  __("Write Here.."),
+                        ])
+                    </div>
+                    <div class="col-xl-4 col-lg-4 form-group">
                         @include('admin.components.form.input',[
                             'label'         => __("address"),
                             'name'          => 'address',

@@ -13,7 +13,7 @@ class MoneyInTrxExport implements FromArray, WithHeadings
     public function headings(): array
     {
         return [
-            ['SL', 'TRX', 'SENDER TYPE', 'SENDER', 'RECEIVER TYPE', 'RECEIVER', 'SENDER AMOUNT', 'RECEIVER AMOUNT', 'CBS TRANSFERT', 'CHARGE', 'AGENT PROFIT', 'CBS PROFIT', 'PAYABLE', 'STATUS', 'TIME'],
+            ['SL', 'REF', 'COLLECTEUR', 'CLIENT', 'MONTANT', 'TOTAL CHARGES', 'COMMISSIONS', 'PROFITS', 'MONTANT TOTAL', 'STATUS',  'DATE'],
         ];
     }
 
@@ -25,20 +25,16 @@ class MoneyInTrxExport implements FromArray, WithHeadings
         )->where('type', PaymentGatewayConst::MONEYIN)->where('attribute', PaymentGatewayConst::SEND)->latest()->get()->map(function ($item, $key) {
             return [
                 'id'    => $key + 1,
-                'trx'   => $item->trx_id,
-                'sender_type' => "AGENT",
-                'sender'  => $item->creator->email,
-                'receiver_type'  => "USER",
-                'receiver'  => $item->details->receiver_email,
-                'sender_amount'  =>  get_amount($item->details->charges->sender_amount, $item->details->charges->sender_currency, 2),
-                'receiver_amount'  => get_amount($item->details->charges->receiver_amount, $item->details->charges->receiver_currency, 2),
-                'cbsTransfert'  => $item->cbsTransfert,
-                'charge_amount'  =>  get_amount($item->details->charges->total_charge, $item->details->charges->sender_currency, 2),
-                'agent_profit'  =>  get_amount($item->details->charges->agent_total_commission, $item->details->charges->sender_currency, 2),
-                'cbs_profit'  =>  get_amount(($item->details->charges->total_charge - $item->details->charges->agent_total_commission), $item->details->charges->sender_currency, 2),
-                'payable_amount'  => get_amount($item->details->charges->payable, $item->details->charges->sender_currency, 2),
+                'ref'   => $item->trx_id,
+                'collecteur'  => $item->creator->fullname,
+                'client'  => $item->details->receiver_name,
+                'montant'  => get_amount($item->details->charges->receiver_amount, null, 2),
+                'total_charges'  =>  get_amount($item->details->charges->total_charge, null, 2),
+                'commissions'  =>  get_amount($item->details->charges->agent_total_commission, null, 2),
+                'profits'  =>  get_amount(($item->details->charges->total_charge - $item->details->charges->agent_total_commission), null, 2),
+                'total'  => get_amount($item->details->charges->payable, null, 2),
                 'status'  => __($item->stringStatus->value),
-                'time'  =>   $item->created_at->format('d-m-y h:i:s A'),
+                'date'  =>   $item->created_at->format('d-m-y h:i:s A'),
             ];
         })->toArray();
     }

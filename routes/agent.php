@@ -206,6 +206,7 @@ Route::prefix("agent")->name("agent.")->group(function () {
     //Profits
     Route::controller(ProfitsController::class)->prefix("profits")->name("profits.")->group(function () {
         Route::get('/', 'index')->name('index');
+        Route::get('export', 'exportData')->name('exportData');
     });
     //google-2fa
     Route::controller(SecurityController::class)->prefix("security")->name('security.')->group(function () {

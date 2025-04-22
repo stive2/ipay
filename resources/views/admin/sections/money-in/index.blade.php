@@ -32,19 +32,16 @@
             <table class="custom-table">
                 <thead>
                     <tr>
-                        <th>{{ __("TRX ID") }}</th>
-                        <th>{{ __("Sender Type") }}</th>
-                        <th>{{ __("sender") }}</th>
-                        <th>{{ __("Receiver Type") }}</th>
-                        <th>{{ __("Receiver") }}</th>
-                        <th>{{ __("Sender Amount") }}</th>
-                        <th>{{ __("Receiver Amount") }}</th>
-                        <th>{{ __("charge") }}</th>
-                        <th>{{ __("Agent Profit") }}</th>
-                        <th>{{ __("Platform Profit") }}</th>
-                        <th>{{ __("Payable") }}</th>
-                        <th>{{ __(("Status")) }}</th>
-                        <th>{{ __("Time") }}</th>
+                        <th>{{ __("Ref Collecte") }}</th>
+                        <th>{{ __("Collecteur") }}</th>
+                        <th>{{ __("Client") }}</th>
+                        <th>{{ __("Montant collecte") }}</th>
+                        <th>{{ __("Charge Total") }}</th>
+                        <th>{{ __("Commisions") }}</th>
+                        <th>{{ __("Profits") }}</th>
+                        <th>{{ __("Montant total") }}</th>
+                        {{--  <th>{{ __(("Status")) }}</th>  --}}
+                        <th>{{ __("Date") }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -52,26 +49,20 @@
                         <tr>
                             <td>{{ $item->trx_id }}</td>
                             <td>
-                                {{ __("AGENT") }}
+                                <a href="{{ setRoute('admin.agents.details',$item->creator->username) }}">{{ $item->creator->fullname }}</a>
                             </td>
                             <td>
-                                <a href="{{ setRoute('admin.agents.details',$item->creator->username) }}">{{ $item->creator->email }}</a>
+                                <a href="{{ setRoute('admin.users.details',$item->details->receiver_username) }}">{{ $item->details->receiver_name }}</a>
                             </td>
-                            <td>
-                                {{ __("USER") }}
-                            </td>
-                            <td>
-                                <a href="{{ setRoute('admin.users.details',$item->details->receiver_username) }}">{{ $item->details->receiver_email }}</a>
-                            </td>
-                            <td>{{ get_amount($item->details->charges->sender_amount,$item->details->charges->sender_currency,2) }}</td>
+                            {{--  <td>{{ get_amount($item->details->charges->sender_amount,$item->details->charges->sender_currency,2) }}</td>  --}}
                             <td>{{ get_amount($item->details->charges->receiver_amount,$item->details->charges->receiver_currency,2) }}</td>
                             <td>{{ get_amount($item->details->charges->total_charge,$item->details->charges->sender_currency,2) }}</td>
                             <td>{{ get_amount($item->details->charges->agent_total_commission,$item->details->charges->sender_currency,2) }}</td>
                             <td>{{ get_amount(($item->details->charges->total_charge - $item->details->charges->agent_total_commission),$item->details->charges->sender_currency,2) }}</td>
                             <td>{{ get_amount($item->details->charges->payable,$item->details->charges->sender_currency,2) }}</td>
-                            <td>
+                            {{--  <td>
                                 <span class="{{ $item->stringStatus->class }}">{{ __($item->stringStatus->value) }}</span>
-                            </td>
+                            </td>  --}}
                             <td>{{ $item->created_at->format('d-m-y h:i:s A') }}</td>
 
                         </tr>

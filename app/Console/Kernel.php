@@ -2,6 +2,9 @@
 
 namespace App\Console;
 
+use App\Http\Controllers\Admin\SetupSMSController;
+use App\Http\Controllers\Admin\WebSettingsController;
+use App\Http\Controllers\GlobalController;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -15,6 +18,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        $schedule->call(function () {
+            WebSettingsController::autoCollect();
+            // SetupSMSController::sendSoldes();
+        })->everyMinute();
+
         $schedule->command('queue:retry all')->daily();
         $schedule->command('queue:work --stop-when-empty')
             ->everyFiveMinutes()

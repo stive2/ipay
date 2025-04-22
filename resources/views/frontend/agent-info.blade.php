@@ -28,7 +28,7 @@
                     <h1 class="banner-title">{{ __(@$agent->value->language->$lang->sub_heading) }}</h1>
                     <p>{{ __(@$agent->value->language->$lang->details) }}</p>
                     <div class="banner-btn">
-                        <a href="{{ setRoute('agent.register') }}" class="btn--base"><i class="las la-user-plus me-1"></i>{{ __("Register") }}</a>
+                        {{--  <a href="{{ setRoute('agent.register') }}" class="btn--base"><i class="las la-user-plus me-1"></i>{{ __("Register") }}</a>  --}}
                         <a href="{{ setRoute('agent.login') }}" class="btn--base active"><i class="las la-key me-1"></i>{{ __("Login") }}</a>
                     </div>
                 </div>
@@ -42,7 +42,7 @@
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Start app section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-<section class="merchant-app-section pt-120">
+{{--  <section class="merchant-app-section pt-120">
     <div class="container">
         <div class="row mb-30-none justify-content-center align-items-center">
             <div class="col-xxl-2 col-xl-2 col-lg-1 d-md-none"></div>
@@ -64,7 +64,7 @@
             </div>
         </div>
     </div>
-</section>
+</section>  --}}
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     End app section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
@@ -72,7 +72,7 @@
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Start service section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-@include('frontend.partials.service')
+{{--  @include('frontend.partials.service')  --}}
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     End service section
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->

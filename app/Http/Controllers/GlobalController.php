@@ -208,24 +208,26 @@ class GlobalController extends Controller
 
         $smsNotification = new SmsNotification($data);
         if ($response === false) {
-            $smsNotification->status = '0';
-            $smsNotification->response = 'Error curl : ' . curl_error($ch);
+            $data['status'] = '0';
+            $data['response'] = 'Error curl : ' . curl_error($ch);
         } else {
             $response = json_decode($response);
-            $smsNotification->response = $response;
+            $data['response'] = json_encode($response);
             if (!$response->status) {
-                $smsNotification->status = '0';
+                $data['status'] = '0';
             } else {
                 if ($response->status == 'success') {
-                    $smsNotification->status = '1';
+                    $data['status'] = '1';
                 } else {
-                    $smsNotification->status = '0';
+                    $data['status'] = '0';
                 }
             }
         }
+
+        $smsNotification = new SmsNotification($data);
         $smsNotification->save();
 
-        return $response;
+        return $data;
     }
 
     public static function verify_rib(array $request)

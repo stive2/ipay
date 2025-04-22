@@ -22,6 +22,7 @@ class ProfitLogsController extends Controller
     {
         $page_title = __("All Profits Logs");
         $profits = TransactionCharge::with('transactions')
+            ->where('total_charge', '>', 0)
             ->whereHas('transactions', function ($query) {
                 $query->whereNotIn('type', [PaymentGatewayConst::TYPEADDMONEY, PaymentGatewayConst::TYPEMONEYOUT, PaymentGatewayConst::TYPEADDSUBTRACTBALANCE]);
             })
@@ -34,7 +35,7 @@ class ProfitLogsController extends Controller
     }
     public function exportData()
     {
-        $file_name = now()->format('Y-m-d_H:i:s') . "_admin_profit_Logs" . '.xlsx';
+        $file_name = now()->format('Y-m-d_H:i:s') . "_journal_charges" . '.xlsx';
         return Excel::download(new AdminProfitLogs, $file_name);
     }
     public function balanceLogs()
@@ -50,7 +51,7 @@ class ProfitLogsController extends Controller
     }
     public function exportRecharge()
     {
-        $file_name = now()->format('Y-m-d_H:i:s') . "_admin_recharge_Logs" . '.xlsx';
+        $file_name = now()->format('Y-m-d_H:i:s') . "_Journal_recharge" . '.xlsx';
         return Excel::download(new AdminRechargeLogs, $file_name);
     }
 }

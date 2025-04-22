@@ -45,7 +45,7 @@
                                         </div>
                                         <input name="email" class="form--control checkUser" id="username" placeholder="{{ __('enter user ID') }}"/>
                                     </div>
-                                    <button type="button" class="paste-badge scan"  data-toggle="tooltip" title="Scan QR"><i class="fas fa-camera"></i></button>
+                                    {{--  <button type="button" class="paste-badge scan"  data-toggle="tooltip" title="Scan QR"><i class="fas fa-camera"></i></button>  --}}
                                     <label class="exist text-start"></label>
 
                                 </div>
@@ -199,7 +199,7 @@
                             </div>
                             <input readonly name="email" class="form--control checkUser utilisateur" id="user" placeholder="{{ __('enter user ID') }}" />
                         </div>
-                        <button type="button" class="paste-badge scan"  data-toggle="tooltip" title="Scan QR"><i class="fas fa-camera"></i></button>
+                        {{--  <button type="button" class="paste-badge scan"  data-toggle="tooltip" title="Scan QR"><i class="fas fa-camera"></i></button>  --}}
                         <label class="exist text-start"></label>
 
                     </div>
@@ -214,7 +214,73 @@
                         </div>
                         <code class="d-block mt-10 text-end text--warning balance-show">{{ __("Available Balance") }} {{ authWalletBalance() }} {{ get_default_currency_code() }}</code>
                     </div>
-                    <div class="col-xl-12 col-lg-12 form-group" id="show_hide_password">
+                    <div class="dash-payment-body">
+                        <div class="preview-list-wrapper">
+
+                            <div class="preview-list-item">
+                                <div class="preview-list-left">
+                                    <div class="preview-list-user-wrapper">
+                                        <div class="preview-list-user-icon">
+                                            <i class="las la-coins"></i>
+                                        </div>
+                                        <div class="preview-list-user-content">
+                                            <span>{{ __("Entered Amount") }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="preview-list-right">
+                                    <span class="fw-bold request-amount">--</span>
+                                </div>
+                            </div>
+                            <div class="preview-list-item">
+                                <div class="preview-list-left">
+                                    <div class="preview-list-user-wrapper">
+                                        <div class="preview-list-user-icon">
+                                            <i class="las la-battery-half"></i>
+                                        </div>
+                                        <div class="preview-list-user-content">
+                                            <span>{{ __("Transfer Fee") }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="preview-list-right">
+                                    <span class="fees">--</span>
+                                </div>
+                            </div>
+                            <div class="preview-list-item">
+                                <div class="preview-list-left">
+                                    <div class="preview-list-user-wrapper">
+                                        <div class="preview-list-user-icon">
+                                            <i class="las la-receipt"></i>
+                                        </div>
+                                        <div class="preview-list-user-content">
+                                            <span>{{ __("Recipient Received") }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="preview-list-right">
+                                    <span class="recipient-get">--</span>
+                                </div>
+                            </div>
+                            <div class="preview-list-item">
+                                <div class="preview-list-left">
+                                    <div class="preview-list-user-wrapper">
+                                        <div class="preview-list-user-icon">
+                                            <i class="las la-money-check-alt"></i>
+                                        </div>
+                                        <div class="preview-list-user-content">
+                                            <span>{{__("Total Payable")}}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="preview-list-right">
+                                    <span class="last payable-total text-warning">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    {{--  <div class="col-xl-12 col-lg-12 form-group" id="show_hide_password">
                         <label>Confirm the operation with your password<span class="text--base">*</span></label>
                         <div class="input-group">
                             <div class="input-group-prepend">
@@ -224,10 +290,28 @@
 
                             <a href="javascript:void(0)" class="show-pass"><i class="fa fa-eye-slash" aria-hidden="true"></i></a>
                         </div>
+                    </div>  --}}
+                    <div class="col-xl-12 col-lg-12 form-group">
+                        <label>Mettre à jour le numéro de téléphone du client<span class="text--base">*</span></label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text copytext"><span>{{ __("Téléphone") }}</span></span>
+                            </div>
+                            <input required class="form-control form--control" name="mobile" id="mobile" placeholder="{{ __('Téléphone') }}">
+                        </div>
                     </div>
+                    {{--  <div class="col-xl-12 col-lg-12 form-group">
+                        <label>Mettre à jour le mail du client<span class="text--base">*</span></label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text copytext"><span>{{ __("Email") }}</span></span>
+                            </div>
+                            <input type="email" required class="form-control form--control" name="email" id="email" placeholder="{{ __('Email') }}">
+                        </div>
+                    </div>  --}}
                     <div class="col-xl-12 col-lg-12 form-group d-flex align-items-center justify-content-between mt-4">
                         <button type="button" class="btn btn--danger modal-close">{{ __("closeS") }}</button>
-                        <button type="submit" class="btn btn--base">{{__("action")}}</button>
+                        <button type="submit" class="btn btn--base">{{__("Confirmer")}}</button>
                     </div>
                 </div>
             </form>
@@ -291,7 +375,9 @@
                     if($('.exist').hasClass('text--danger')){
                         $('.exist').removeClass('text--danger');
                     }
-                    $('.exist').text(`Valid user for transaction.`).addClass('text--success');
+                    $('.exist').text(response['data']['firstname'] + ' ' + response['data']['lastname']).addClass('text--success');
+                    $('#mobile').val(response['data']['mobile']);
+                    $('#email').val(response['data']['email']);
                     $('.transfer').attr('disabled',false)
                 } else {
                     if($('.exist').hasClass('text--success')){

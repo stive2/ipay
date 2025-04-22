@@ -51,12 +51,16 @@ class MoneyInController extends Controller
     public function checkUser(Request $request)
     {
         $email = $request->email;
-        $exist['data'] = User::where('email', $email)->active()->first();
+        $exist['data'] = User::where('username', $email)->active()->first();
+        // if(!$exist['data']) $exist['data'] = User::where('mobile', $email)->active()->first();
+        // if(!$exist['data']) $exist['data'] = User::where('username', $email)->active()->first();
+        if(!$exist['data']) $exist['data'] = User::where('matricule', $email)->active()->first();
+        if(!$exist['data']) $exist['data'] = User::where('rib', $email)->active()->first();
 
-        $user = auth()->user();
+        /* $user = auth()->user();
         if (@$exist['data'] && $user->email == @$exist['data']->email) {
             return response()->json(['own' => __("Can't Money-In to your own")]);
-        }
+        } */
         return response($exist);
     }
     public function confirmedMoneyIn(Request $request)
@@ -64,10 +68,15 @@ class MoneyInController extends Controller
         $validated = Validator::make($request->all(), [
             'amount' => 'required|numeric|gt:0',
             'email' => 'required',
-            'password' => 'required'
+            'mobile' => 'required',
+            // 'password' => 'required'
         ])->validate();
 
         $basic_setting = BasicSettings::first();
+        $user = auth()->user();
+        if(!$basic_setting->collecte_on || !$user->collecte_on){
+            return back()->with(['error' => [__('La collecte est actuellement fermée')]]);
+        }
 
         $sender_wallet = AgentWallet::auth()->active()->first();
         if (!$sender_wallet) {
@@ -79,36 +88,48 @@ class MoneyInController extends Controller
 
         // 27/08/2024
         // Exemple de mot de passe fourni par l'utilisateur
-        $plainPassword = $validated['password'];
+        // $plainPassword = $validated['password'];
 
         $adminID = null;
         if (session()->get('adminlog')) {
             $admin = (object)session()->get('adminlog');
             $adminID = $admin->id;
 
-            $hashedPassword = $admin->password;
+            // $hashedPassword = $admin->password;
         } else {
             // Exemple de mot de passe haché stocké en base de données
-            $hashedPassword = auth()->user()->password;
+            // $hashedPassword = auth()->user()->password;
         }
 
         // 02/09/2024
-        if (Hash::check($plainPassword, $hashedPassword)) {
+        /* if (Hash::check($plainPassword, $hashedPassword)) {
             // Le mot de passe est correct
         } else {
             // Le mot de passe est incorrect
             return back()->with(['error' => [__("Password is incorrect")]]);
-        }
+        } */
 
         $field_name = "username";
         // 21/08/2022
-        if (check_email($validated['email']) || check_phone($validated['email'])) {
+        /* if (check_email($validated['email'])) {
             $field_name = "email";
         }
+        if (check_phone($validated['email'])) {
+            $field_name = "mobile";
+        } */
+
         $receiver = User::where($field_name, $validated['email'])->active()->first();
+        if(!$receiver) $receiver = User::where('matricule', $validated['email'])->active()->first();
+        if(!$receiver) $receiver = User::where('rib', $validated['email'])->active()->first();
+
         if (!$receiver) {
             return back()->with(['error' => [__("Receiver doesn't exists or Receiver is temporary banned")]]);
+        } else {
+            $receiver->mobile = $validated['mobile'];
+            $receiver->full_mobile = '237'.$validated['mobile'];
+            $receiver->save();
         }
+
         $receiver_wallet = UserWallet::where("user_id", $receiver->id)->first();
 
         if (!$receiver_wallet) {
@@ -138,7 +159,7 @@ class MoneyInController extends Controller
                     if ($basic_setting->agent_email_notification == true) {
                         $notifyDataSender = [
                             'trx_id'  => $trx_id,
-                            'title'  => __("Money In To") . " @" . @$receiver_wallet->user->username . " (" . @$receiver_wallet->user->email . ")",
+                            'title'  => __("Money In To") . " @" . @$receiver_wallet->user->firstname.' '.$receiver_wallet->user->lastname . " (" . @$receiver_wallet->user->matricule . ")",
                             'request_amount'  => getAmount($charges['sender_amount'], 4) . ' ' . $charges['sender_currency'],
                             'payable'   =>  getAmount($charges['payable'], 4) . ' ' . $charges['sender_currency'],
                             'charges'   => getAmount($charges['total_charge'], 2) . ' ' . $charges['sender_currency'],
@@ -158,18 +179,24 @@ class MoneyInController extends Controller
                 //Receiver notifications
 
                 try {
+                    $receiver->solde_cbs = $receiver->solde_cbs + $charges['receiver_amount'];
+                    $receiver->save();
+
                     $dataSend = [
                         'recipient' => $receiver->full_mobile,
-                        'message'   => "Votre collecte journalière du montant de " . getAmount($charges['receiver_amount'], 2) . " "
-                            . $charges['receiver_currency'] . " a été enregistré avec succès le " . Carbon::now()->toDateTimeString() . " par l'agent  @" .
-                            $sender_wallet->agent->username . " (" . $sender_wallet->agent->email . "). Reférence de l'opération : " . $trx_id,
+                        'message'   => "Votre collecte journaliere du montant de " . getAmount($charges['receiver_amount'], 2) . " "
+                            . $charges['receiver_currency'] . " a ete enregistre avec succes le " . Carbon::now()->toDateTimeString() . " par @" .
+                            $sender_wallet->agent->firstname . " (matricule : " . $sender_wallet->agent->matricule . ").".
+                            ". Votre nouveau solde est de " . getAmount($receiver->solde_cbs, 2) . " "
+                            . $charges['receiver_currency']. ". Ref operation : " . $trx_id,
                     ];
+
                     GlobalController::send_sms($dataSend);
 
                     if ($basic_setting->agent_email_notification == true) {
                         $notifyDataReceiver = [
                             'trx_id'  => $trx_id,
-                            'title'  => __("Money In From") . " @" . @$sender_wallet->agent->username . " (" . @$sender_wallet->agent->email . ")",
+                            'title'  => __("Money In From") . " @" . @$sender_wallet->agent->firstname . " (" . @$sender_wallet->agent->email . ")",
                             'received_amount'  => getAmount($charges['receiver_amount'], 2) . ' ' . $charges['receiver_currency'],
                             'status'  => __("success"),
                         ];
@@ -223,12 +250,13 @@ class MoneyInController extends Controller
                 $data['conversion_amount'] = $conversion_amount;
                 $data['will_get'] = $will_get;
                 $data['payable'] = $reduceAbleTotal;
+                $data['agent']  = $sender_wallet->agent->id;
                 session()->put('moneyoutData', $data);
                 $this->cbsMoneyOut($trx_id);
             } catch (Exception $e) {
-                //
+                return back()->with(['success' => [__($e->getMessage())]]);
             }
-            return back()->with(['success' => [__("Money In Request Successful")]]);
+            return back()->with(['success' => [__("Collecte enregistrée avec succès")]]);
         } catch (Exception $e) {
             return back()->with(['error' => [__("Something went wrong! Please try again.")]]);
         }
@@ -240,17 +268,17 @@ class MoneyInController extends Controller
             //email notification
             'subject' => __("Money In") . " (" . authGuardApi()['type'] . ")",
             'greeting' => __("Money In Information"),
-            'email_content' => __("web_trx_id") . " : " . $trx_id . "<br>" . __("sender") . ": @" . $sender->email . "<br>" . __("Receiver") . ": @" . $receiver->email . "<br>" . __("request Amount") . " : " . get_amount($charges['sender_amount'], get_default_currency_code()) . "<br>" . __("Fees & Charges") . " : " . get_amount($charges['total_charge'], get_default_currency_code()) . "<br>" . __("Total Payable Amount") . " : " . get_amount($charges['payable'], get_default_currency_code()) . "<br>" . __("Recipient Received") . " : " . get_amount($charges['sender_amount'], get_default_currency_code()) . "<br>" . __("Status") . " : " . __("success"),
+            'email_content' => __("web_trx_id") . " : " . $trx_id . "<br>" . __("sender") . ": @" . $sender->firstname . "<br>" . __("Receiver") . ": @" . $receiver->firstname . "<br>" . __("request Amount") . " : " . get_amount($charges['sender_amount'], get_default_currency_code()) . "<br>" . __("Fees & Charges") . " : " . get_amount($charges['total_charge'], get_default_currency_code()) . "<br>" . __("Total Payable Amount") . " : " . get_amount($charges['payable'], get_default_currency_code()) . "<br>" . __("Recipient Received") . " : " . get_amount($charges['sender_amount'], get_default_currency_code()) . "<br>" . __("Status") . " : " . __("success"),
 
             //push notification
             'push_title' => __("Money In") . " " . __('Successful') . " (" . authGuardApi()['type'] . ")",
-            'push_content' => __('web_trx_id') . " " . $trx_id . " " . __("sender") . ": @" . $sender->email . " " . __("Receiver") . ": @" . $receiver->email . " " . __("Sender Amount") . " : " . get_amount($charges['sender_amount'], get_default_currency_code()) . " " . __("Receiver Amount") . " : " . get_amount($charges['sender_amount'], get_default_currency_code()),
+            'push_content' => __('web_trx_id') . " " . $trx_id . " " . __("sender") . ": @" . $sender->firstname . " " . __("Receiver") . ": @" . $receiver->firstname . " " . __("Sender Amount") . " : " . get_amount($charges['sender_amount'], get_default_currency_code()) . " " . __("Receiver Amount") . " : " . get_amount($charges['sender_amount'], get_default_currency_code()),
 
             //admin db notification
             'notification_type' =>  NotificationConst::MONEYIN,
             'trx_id' =>  $trx_id,
             'admin_db_title' => "Money In" . " (" . $trx_id . ")" . " (" . authGuardApi()['type'] . ")",
-            'admin_db_message' => "Sender" . ": @" . $sender->email . "," . "Receiver" . ": @" . $receiver->email . "," . "Sender Amount" . " : " . get_amount($charges['sender_amount'], get_default_currency_code()) . "," . "Receiver Amount" . " : " . get_amount($charges['sender_amount'], get_default_currency_code())
+            'admin_db_message' => "Sender" . ": @" . $sender->firstname . "," . "Receiver" . ": @" . $receiver->firstname . "," . "Sender Amount" . " : " . get_amount($charges['sender_amount'], get_default_currency_code()) . "," . "Receiver Amount" . " : " . get_amount($charges['sender_amount'], get_default_currency_code())
         ];
 
         try {
@@ -298,9 +326,13 @@ class MoneyInController extends Controller
                 'remark'                        => ucwords(remove_speacial_char(PaymentGatewayConst::MONEYIN, " ")) . " To " . $receiver_wallet->user->fullname,
                 'details'                       => json_encode([
                     'receiver_username' => $receiver_wallet->user->username,
+                    'receiver_name' => $receiver_wallet->user->firstname .' '. $receiver_wallet->user->lastname,
+                    'receiver_matricule' => $receiver_wallet->user->matricule,
                     'receiver_email' => $receiver_wallet->user->email,
                     'sender_username' => $sender_wallet->agent->username,
                     'sender_email' => $sender_wallet->agent->email,
+                    'sender_matricule' => $sender_wallet->agent->matricule,
+                    'sender_name' => $sender_wallet->agent->firstname.' '.$sender_wallet->agent->lastname,
                     'charges' => $charges
                 ]),
                 'attribute'                      => PaymentGatewayConst::SEND,
@@ -401,6 +433,11 @@ class MoneyInController extends Controller
                     'receiver_email' => $receiver_wallet->user->email,
                     'sender_username' => $sender_wallet->agent->username,
                     'sender_email' => $sender_wallet->agent->email,
+                    'charges' => $charges,
+                    'receiver_name' => $receiver_wallet->user->firstname .' '. $receiver_wallet->user->lastname,
+                    'receiver_matricule' => $receiver_wallet->user->matricule,
+                    'sender_matricule' => $sender_wallet->agent->matricule,
+                    'sender_name' => $sender_wallet->agent->firstname.' '.$sender_wallet->agent->lastname,
                     'charges' => $charges
                 ]),
                 'attribute'                     => PaymentGatewayConst::RECEIVED,
@@ -486,7 +523,7 @@ class MoneyInController extends Controller
 
         $get_values = [];
         // DB::beginTransaction();
-        try {
+         try {
             $inserted_id = $this->insertRecordManual($moneyOutData, $gateway, $get_values, $reference = null, PaymentGatewayConst::STATUSPENDING);
             /* DB::table("transactions")->where('trx_id', $trx_id)->update([
                 'cbsTransfert' => 'ND',
@@ -498,7 +535,7 @@ class MoneyInController extends Controller
             $this->adminNotificationcbs($moneyOutData, PaymentGatewayConst::STATUSPENDING);
             $this->insertDeviceManual($moneyOutData, $inserted_id);
         } catch (Exception $e) {
-            DB::rollBack();
+            // DB::rollBack();
             return back()->with(['success' => [__("Money In Request Successful but automatic withdraw has fail")]]);
         }
     }
@@ -517,8 +554,9 @@ class MoneyInController extends Controller
         DB::beginTransaction();
         try {
             $id = DB::table("transactions")->insertGetId([
-                'user_id'                       => auth()->user()->id,
+                'user_id'                       => $moneyOutData->user_id,
                 'user_wallet_id'                => $moneyOutData->wallet_id,
+                'agent_id'                      => $moneyOutData->agent,
                 'payment_gateway_currency_id'   => $moneyOutData->gateway_currency_id,
                 'type'                          => PaymentGatewayConst::TYPEMONEYOUT,
                 'trx_id'                        => $trx_id,
@@ -577,7 +615,7 @@ class MoneyInController extends Controller
 
             UserNotification::create([
                 'type'      => NotificationConst::MONEY_OUT,
-                'user_id'  =>  auth()->user()->id,
+                'user_id'  =>  $moneyOutData->user_id,
                 'message'   => $notification_content,
             ]);
             DB::commit();

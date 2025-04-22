@@ -25,10 +25,34 @@
             <div class="table-header">
                 <h5 class="title">{{ __("All Agent") }}</h5>
                 <div class="table-btn-area">
+                    @include('admin.components.link.custom',[
+                        'href'          => "#agent-import",
+                        'class'         => "btn--base py-2 px-4 bg--info modal-btn",
+                        'icon'          => "fas fa-upload me-1",
+                        'text'          => __("Import"),
+                        // 'permission'    => "admin.agents.import",
+                    ])
+                    @if(count($agents) > 0)
+                        @include('admin.components.link.custom',[
+                            'text'          => __("Download"),
+                            'icon'          => "fas fa-download me-1",
+                            // 'permission'    => "admin.agents.download",
+                            'href'          => setRoute('admin.agents.download'),
+                            'class'         => "btn--base py-2 px-4 bg--primary",
+                        ])
+                    @endif
+                    @include('admin.components.link.add-default',[
+                        'class'         => "py-2 px-4 modal-btn",
+                        'text'          => __("Add New"),
+                        // 'permission'    => "admin.agents.store",
+                        'href'          => setRoute('agent.register'),
+                    ])
+                </div>
+                <div class="table-btn-area">
                     @include('admin.components.button.custom',[
                         'type'          => "button",
-                        'class'         => "empty-wallet w-100",
-                        'text'          => "Empty Wallet",
+                        'class'         => "empty-wallet w-100 bg--danger",
+                        'text'          => "Vider les wallets",
                     ])
                 </div>
                 <div class="table-btn-area">
@@ -52,8 +76,11 @@
             </div>
         </div>
         <!-- Inclusion de l'API Google Maps -->
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCaJWRLynYXmkIDFdHhA3l8uqVuMFVHNoE"></script>
+        {{--  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCaJWRLynYXmkIDFdHhA3l8uqVuMFVHNoE"></script>  --}}
     @endif
+
+    {{-- Import Agent --}}
+    @include('admin.components.modals.agent')
 @endsection
 
 @push('script')
@@ -62,7 +89,7 @@
         $(".empty-wallet").click(function(){
             var actionRoute = "{{ setRoute('admin.agents.auto.wallet.balance.substract') }}";
             var target      = "AZE";
-            var message     = `Are you sure to empty all agent wallet?`;
+            var message     = `Êtes vous sûr de vouloir vider les wallets de tous les agents ?`;
             openDeleteModal(actionRoute,target,message,"Approve","POST");
         });
     </script>

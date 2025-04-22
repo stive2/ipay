@@ -146,7 +146,7 @@
             </form>
         </div>
     </div>
-    <div class="custom-card">
+    {{--  <div class="custom-card">
         <div class="card-header">
             <h6 class="title">{{ __($page_title) }} ({{ __("Merchant") }})</h6>
         </div>
@@ -201,7 +201,7 @@
                 </div>
             </form>
         </div>
-    </div>
+    </div>  --}}
 @endsection
 
 @push('script')

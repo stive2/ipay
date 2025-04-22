@@ -12,10 +12,10 @@
         <form class="account-form" action="{{ setRoute('admin.login.submit') }}" method="POST">
             @csrf
             <div class="form-group">
-                <input type="text" class="@error('email') is-invalid @enderror" title="Enter Username" required name="email" value="{{ old('email') }}" autofocus>
-                <label>{{ __("email Address") }}</label>
+                <input type="text" class="@error('credentials') is-invalid @enderror" title="Enter Username" required name="credentials" value="{{ old('credentials') }}" autofocus>
+                <label>{{ __("Email/Telephone/Username") }}</label>
 
-                @error('email')
+                @error('credentials')
                     <div class="alert alert-danger">{{ $message }}</div>
                 @enderror
             </div>

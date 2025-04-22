@@ -54,7 +54,7 @@
                             </div>
                             <div class="profile-form-area">
                                 <div class="row">
-                                    <div class="col-xl-4 col-lg-4 form-group">
+                                    <div class="col-xl-6 col-lg-6 form-group">
                                         @include('admin.components.form.input',[
                                              'label'         => __('first Name')."<span>*</span>",
                                             'name'          => "firstname",
@@ -62,7 +62,7 @@
                                             'value'         => old('firstname',auth()->user()->firstname)
                                         ])
                                     </div>
-                                    <div class="col-xl-4 col-lg-4 form-group">
+                                    <div class="col-xl-6 col-lg-6 form-group">
                                         @include('admin.components.form.input',[
                                             'label'         => __('last Name')."<span>*</span>",
                                             'name'          => "lastname",
@@ -70,14 +70,14 @@
                                             'value'         => old('lastname',auth()->user()->lastname)
                                         ])
                                     </div>
-                                    <div class="col-xl-4 col-lg-4 form-group">
+                                    {{--  <div class="col-xl-4 col-lg-4 form-group">
                                         @include('admin.components.form.input',[
                                             'label'         => __("appLStoreName")."<span>*</span>",
                                             'name'          => "store_name",
                                             'placeholder'   => __("appLEnterStoreName"),
                                             'value'         => old('store_name',auth()->user()->store_name)
                                         ])
-                                    </div>
+                                    </div>  --}}
                                     <div class="col-xl-6 col-lg-6 form-group">
                                         <label>{{ __("country") }}<span>*</span></label>
                                         <select name="country" class="form--control select2-auto-tokenize country-select" data-placeholder="{{ __('select Country') }}" data-old="{{ old('country',auth()->user()->address->country ?? "") }}">

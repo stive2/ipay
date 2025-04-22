@@ -52,11 +52,11 @@
                             </a>
                         </li>
                     @endif
-                    @if(module_access('agent-money-in',$module)->status)
+                    @if(module_access('agent-money-in',$module)->status && status_collecteAgent())
                         <li class="sidebar-menu-item">
                             <a href="{{ setRoute('agent.money.in.index') }}">
                                 <i class="menu-icon fas fa-paper-plane"></i>
-                                <span class="menu-title">{{ __("Money In") }}</span>
+                                <span class="menu-title">{{ __("Collecte mobile") }}</span>
                             </a>
                         </li>
                     @endif
@@ -92,19 +92,19 @@
                         </a>
                     </li>
                     @endif
-                    <li class="sidebar-menu-item">
+                    {{--  <li class="sidebar-menu-item">
                         <a href="{{ setRoute('agent.sender.recipient.index') }}">
                             <i class="menu-icon fas fa-user-edit"></i>
                             <span class="menu-title">{{ __("Saved My Sender") }}</span>
                         </a>
-                    </li>
+                    </li>  <a href="{{ setRoute('agent.receiver.recipient.index') }}"> --}}
 
-                    <li class="sidebar-menu-item">
-                        <a href="{{ setRoute('agent.receiver.recipient.index') }}">
+                    {{--  <li class="sidebar-menu-item">
+                        <a href="{{ setRoute('user.register') }}">
                             <i class="menu-icon fas fa-user-check"></i>
                             <span class="menu-title">{{ __("Saved My Receiver") }}</span>
                         </a>
-                    </li>
+                    </li>  --}}
                     <li class="sidebar-menu-item">
                         <a href="{{ setRoute('agent.transactions.index') }}">
                             <i class="menu-icon fas fa-arrows-alt-h"></i>
@@ -114,7 +114,7 @@
                     <li class="sidebar-menu-item">
                         <a href="{{ setRoute('agent.profits.index') }}">
                             <i class="menu-icon fas fa-hand-holding-usd"></i>
-                            <span class="menu-title">{{ __("Profits Log") }}</span>
+                            <span class="menu-title">{{ __("Commissions") }}</span>
                         </a>
                     </li>
                     <li class="sidebar-menu-item">

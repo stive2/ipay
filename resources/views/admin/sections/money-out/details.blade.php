@@ -31,8 +31,8 @@
                 <div class="col-xl-4 col-lg-4 form-group">
                     <ul class="user-profile-list-two">
                         <li class="one">{{ __("Date") }}: <span>{{ @$data->created_at->format('d-m-y h:i:s A') }}</span></li>
-                        <li class="two">{{ __("web_trx_id") }}: <span>{{ @$data->trx_id }}</span></li>
-                        <li class="three">{{ __("Fullname") }}: <span>
+                        <li class="two">{{ __("Ref Collecte") }}: <span>{{ @$data->trx_id }}</span></li>
+                        <li class="three">{{ __("Client") }}: <span>
                             @if($data->user_id != null)
                                 <a href="{{ setRoute('admin.users.details',$data->creator->username) }}">{{ $data->creator->fullname }} ({{ __("USER") }})</a>
                             @elseif($data->agent_id != null)
@@ -41,8 +41,8 @@
                                 <a href="{{ setRoute('admin.merchants.details',$data->creator->username) }}">{{ $data->creator->fullname }} ({{ __("MERCHANT") }})</a>
                             @endif
                             </span></li>
-                        <li class="four">{{ __("Method") }}: <span>{{ @$data->currency->name }}</span></li>
-                        <li class="five">{{ __("request Amount") }}: <span>{{ number_format(@$data->request_amount,2) }} {{ get_default_currency_code() }}</span></li>
+                        <li class="four">{{ __("Matricule") }}: <span>{{ @$data->creator->matricule }}</span></li>
+                        <li class="five">{{ __("Montant recu") }}: <span>{{ number_format(@$data->request_amount,2) }} {{ get_default_currency_code() }}</span></li>
                     </ul>
                 </div>
 
@@ -54,11 +54,11 @@
                 <div class="col-xl-4 col-lg-4 form-group">
                     <ul class="user-profile-list two">
                            <li class="one">{{ __("Rate") }}: <span>1 {{ get_default_currency_code() }} = {{ number_format(@$data->currency->rate,2) }} {{ @$data->currency->currency_code }}</span></li>
-                           @php
+                           {{--  @php
                                 $conversionAmount = $data->request_amount * $data->currency->rate;
-                         @endphp
-                           <li class="two">{{ __("After Conversion") }}: <span>{{ number_format(@$conversionAmount,2) }} {{ @$data->currency->currency_code }}</span></li>
-                        <li class="three">{{ __("Total Charge") }}: <span>{{ number_format(@$data->charge->total_charge,2) }} {{ @$data->currency->currency_code }}</span></li>
+                         @endphp  --}}
+                           <li class="two">{{ __("N° Compte") }}: <span>{{ @$data->creator->rib }}</span></li>
+                        <li class="three">{{ __("Phone") }}: <span>{{ @$data->creator->full_mobile }}</span></li>
 
                         <li class="four">{{ __("Will Get") }}: <span>{{ number_format(@$data->payable,2) }} {{ @$data->currency->currency_code }}</span></li>
                         <li class="five">{{__("Status") }}:  <span class="{{ @$data->stringStatus->class }}">{{ __(@$data->stringStatus->value) }}</span></li>

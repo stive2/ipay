@@ -62,9 +62,20 @@ class LoginController extends Controller
      */
     protected function credentials(Request $request)
     {
-        $request->merge(['status' => true]);
+        /* $request->merge(['status' => true]);
         $request->merge([$this->username() => $request->credentials]);
-        return $request->only($this->username(), 'password', 'status');
+        return $request->only($this->username(), 'password', 'status'); */
+
+        $field_name = "username";
+        if (check_email($request->credentials)) {
+            $field_name = "email";
+        }
+        if (check_phone($request->credentials)) {
+            $field_name = "mobile";
+        }
+        $request->merge(['status' => true]);
+        $request->merge([$field_name => $request->credentials]);
+        return $request->only($field_name, 'password', 'status');
     }
 
 

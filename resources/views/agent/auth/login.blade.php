@@ -30,9 +30,9 @@
                     <div class="col-xl-12 col-lg-12 form-group">
                         <div class="input-group">
                             <div class="input-group-prepend">
-                                <span class="input-group-text copytext">{{ __("Email")}}</span>
+                                <span class="input-group-text copytext">{{ __("ID")}}</span>
                             </div>
-                             <input name="credentials" class="form--control" placeholder="Enter Email Address" required value="{{old('credentials')}}">
+                             <input name="credentials" class="form--control" placeholder="Email/phone/username" required value="{{old('credentials')}}">
                         </div>
                     </div>
                     <div class="col-lg-12 form-group" id="show_hide_password">
@@ -47,7 +47,7 @@
                     <div class="col-lg-12 form-group text-center">
                         <button type="submit" class="btn--base w-100 btn-loading">{{ __("Login Now") }} <i class="las la-arrow-right"></i></button>
                     </div>
-                    @if($basic_settings->agent_registration)
+                    {{--  @if($basic_settings->agent_registration)
                     <div class="or-area">
                         <span class="or-line"></span>
                         <span class="or-title">{{ __("Or") }}</span>
@@ -58,7 +58,7 @@
                             <label>{{ __("Don't Have An Account?") }} <a href="{{ setRoute('agent.register') }}" class="account-control-btn">{{ __("Register Now") }}</a></label>
                         </div>
                     </div>
-                    @endif
+                    @endif  --}}
                 </div>
             </form>
         </div>

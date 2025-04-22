@@ -1876,7 +1876,6 @@ function showDate($date, $format = 'd-m-Y')
 function authWalletBalance()
 {
     if (auth()->guard('web')->check()) {
-
         $wallet = UserWallet::where('user_id', auth()->user()->id)->first();
         return number_format($wallet->balance, 2);
     } else if (auth()->guard('merchant')->check()) {
@@ -2094,6 +2093,38 @@ function generateTrxString($table, $column, $prefix = '', $length = 8)
     } while ($loop);
 
     return $unique_number;
+}
+
+function status_collecte()
+{
+    $basic_settings = BasicSettingsProvider::get();
+    if (!$basic_settings) {
+        return false;
+    }
+    $notification_config = $basic_settings->collecte_on;
+    if (!$notification_config) {
+        return false;
+    }
+
+    return $notification_config;
+
+}
+
+function status_collecteAgent()
+{
+    $basic_settings = BasicSettingsProvider::get();
+    if (!$basic_settings) {
+        return false;
+    }
+    $notification_config = $basic_settings->collecte_on;
+    if (!$notification_config) {
+        return false;
+    }
+
+    $user = auth()->user();
+
+    return ($notification_config && $user->collecte_on);
+
 }
 
 function module_access($key, $module = null)

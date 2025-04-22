@@ -64,13 +64,13 @@
                     <div class="dashbord-item">
                         <div class="dashboard-content">
                             <div class="left">
-                                <h6 class="title">{{ __("Total Profit") }}</h6>
+                                <h6 class="title">Recharges de solde de la journée</h6>
                                 <div class="user-info">
-                                    <h2 class="user-count">{{ get_default_currency_symbol() }} {{ get_amount($data['total_profits']) }}</h2>
+                                    <h2 class="user-count">{{ get_default_currency_symbol() }} {{ get_amount($data['recharges']) }}</h2>
                                 </div>
                                 <div class="user-badge">
-                                    <span class="badge badge--info">{{ __("This Month") }} {{ get_default_currency_symbol() }}{{ formatNumberInKNotation($data['this_month_profits']) }}</span>
-                                    <span class="badge badge--warning">{{ __("Last Month") }}  {{ get_default_currency_symbol() }}{{ formatNumberInKNotation($data['last_month_profits']) }}</span>
+                                    <span class="badge badge--warning">Total des Recharge</span>
+                                    {{--  <span class="badge badge--info">Profit total {{ get_default_currency_symbol() }} {{ get_default_currency_symbol() }}{{ formatNumberInKNotation($data['last_month_profits']) }}</span>  --}}
                                 </div>
                             </div>
                             <div class="right">
@@ -103,13 +103,13 @@
                         <div class="dashboard-content">
                             <a href="{{ setRoute('admin.money.in.index') }}">
                                 <div class="left">
-                                    <h6 class="title">{{ __("Money In Balance") }}</h6>
+                                    <h6 class="title">Montant collecté ce jour</h6>
                                     <div class="user-info">
-                                        <h2 class="user-count">{{ get_default_currency_symbol() }} {{ get_amount($data['total_money_in']) }}</h2>
+                                        <h2 class="user-count">{{ get_default_currency_symbol() }} {{ get_amount($data['collectes']) }}</h2>
                                     </div>
                                     <div class="user-badge">
-                                        <span class="badge badge--info">{{ __("Completed") }} {{ get_default_currency_symbol() }}{{ formatNumberInKNotation($data['completed_money_in']) }}</span>
-                                        <span class="badge badge--warning">{{ __("Pending") }} {{ get_default_currency_symbol() }}{{ formatNumberInKNotation($data['pending_money_in']) }}</span>
+                                        <span class="badge badge--info">Total des collectes</span>
+                                        {{--  <span class="badge badge--warning">{{ __("Pending") }} {{ get_default_currency_symbol() }}{{ formatNumberInKNotation($data['pending_money_in']) }}</span>  --}}
                                     </div>
                                 </div>
                             </a>
@@ -126,7 +126,7 @@
                         <div class="dashboard-content">
                             <a href="{{ setRoute('admin.users.index') }}">
                                 <div class="left">
-                                    <h6 class="title">{{ __("Total Users") }}</h6>
+                                    <h6 class="title">Clients enrolés</h6>
                                     <div class="user-info">
                                         <h2 class="user-count">{{ $data['total_users'] }}</h2>
                                     </div>
@@ -150,7 +150,7 @@
                         <div class="dashboard-content">
                             <a href="{{ setRoute('admin.agents.index') }}">
                                 <div class="left">
-                                    <h6 class="title">{{ __("Total Agents") }}</h6>
+                                    <h6 class="title">Total Agents</h6>
                                     <div class="user-info">
                                         <h2 class="user-count">{{ $data['total_agents'] }}</h2>
                                     </div>
@@ -193,7 +193,7 @@
                         <div class="dashboard-content">
                             <a href="{{ setRoute('admin.support.ticket.index') }}">
                                 <div class="left">
-                                    <h6 class="title">{{ __("Total Supports Tickets") }}</h6>
+                                    <h6 class="title">Tickets de support</h6>
                                     <div class="user-info">
                                         <h2 class="user-count">{{ $data['total_tickets'] }}</h2>
                                     </div>
@@ -289,9 +289,9 @@
                     <div class="dashbord-item">
                         <div class="dashboard-content">
                             <div class="left">
-                                <h6 class="title">{{ __("Admin Profits") }}</h6>
+                                <h6 class="title">Profits plateforme</h6>
                                 <div class="user-info">
-                                    <h2 class="user-count">{{  get_default_currency_symbol() }} {{getAmount(totalAdminProfits(),2) }}</h2>
+                                    <h2 class="user-count">{{  get_default_currency_symbol() }} {{ get_amount($data['total_profits']) }}</h2>
                                 </div>
                             </div>
 
@@ -299,11 +299,11 @@
                                 <div class="chart" id="chart17" data-percent="100"><span>100%</span></div>
                             </div>
                         </div>
-                        <div class="user-badge">
+                        {{--  <div class="user-badge">
 
                                 <span class="badge badge--success">{{__("LIVE TIME SUPERADMIN PROFITS BALANCE")}}</span>
 
-                        </div>
+                        </div>  --}}
 
                     </div>
                 </div>
@@ -387,56 +387,39 @@
     <div class="table-area  mt-15">
         <div class="table-wrapper">
             <div class="table-header">
-                <h5 class="title">{{ __("Monthly Latest Money In") }}</h5>
-                <a href="{{ setRoute('admin.money.in.index') }}" class="btn--base">{{__("Show More")}}</a>
+                <h5 class="title">Montant colecté par agent dans la journée</h5>
+                <a href="{{ setRoute('admin.money.out.agentcollect') }}" class="btn--base">Voir plus</a>
             </div>
             <div class="table-responsive">
                 <table class="custom-table">
                     <thead>
                         <tr>
-                            <th>{{ __("TRX ID") }}</th>
-                            <th>{{ __("Sender Type") }}</th>
-                            <th>{{ __("sender") }}</th>
-                            <th>{{ __("Receiver Type") }}</th>
-                            <th>{{ __("Receiver") }}</th>
-                            <th>{{ __("Sender Amount") }}</th>
-                            <th>{{ __("Receiver Amount") }}</th>
-                            <th>{{ __("charge") }}</th>
-                            <th>{{ __("Agent Profit") }}</th>
-                            <th>{{ __("Platform Profit") }}</th>
-                            <th>{{ __(("Status")) }}</th>
-                            <th>{{ __("Time") }}</th>
+                            <th>{{ __("Matricule") }}</th>
+                            <th>{{ __("Agent") }}</th>
+                            <th>{{ __("Téléphone") }}</th>
+                            <th>{{ __("Email") }}</th>
+                            <th>{{ __("Montant total collecté") }}</th>
+                            {{--  <th>{{ __(("Status")) }}</th>  --}}
+                            <th>{{ __("Date") }}</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($data['transactions2'] ??[]  as $key => $item)
+                        @forelse ($data['transactions3'] ?? []  as $key => $item)
                             <tr>
-                                <td>{{ $item->trx_id }}</td>
                                 <td>
-                                    {{ __("AGENT") }}
+                                    <a href="{{ setRoute('admin.agents.details',$item->username) }}">{{ $item->matricule }}</a>
                                 </td>
                                 <td>
-                                    <a href="{{ setRoute('admin.agents.details',$item->creator->username) }}">{{ $item->creator->email }}</a>
+                                    <a href="{{ setRoute('admin.agents.details',$item->username) }}">{{ $item->firstname }} {{ $item->lastname }}</a>
                                 </td>
-                                <td>
-                                    {{ __("USER") }}
-                                </td>
-                                <td>
-                                    <a href="{{ setRoute('admin.users.details',$item->details->receiver_username) }}">{{ $item->details->receiver_email }}</a>
-                                </td>
-                                <td>{{ get_amount($item->details->charges->sender_amount,$item->details->charges->sender_currency,2) }}</td>
-                                <td>{{ get_amount($item->details->charges->receiver_amount,$item->details->charges->receiver_currency,2) }}</td>
-                                <td>{{ get_amount($item->details->charges->total_charge,$item->details->charges->sender_currency,2) }}</td>
-                                <td>{{ get_amount($item->details->charges->agent_total_commission,$item->details->charges->sender_currency,2) }}</td>
-                                <td>{{ get_amount(($item->details->charges->total_charge - $item->details->charges->agent_total_commission),$item->details->charges->sender_currency,2) }}</td>
-                                <td>
-                                    <span class="{{ $item->stringStatus->class }}">{{ __($item->stringStatus->value) }}</span>
-                                </td>
-                                <td>{{ $item->created_at->format('d-m-y h:i:s A') }}</td>
+                                <td>{{ $item->full_mobile }}</td>
+                                <td>{{ $item->email }}</td>
+                                <td style="text-align: right">{{ get_amount($item->montant,'XAF',2) }}</td>
+                                <td>{{ date('d-m-Y') }}</td>
 
                             </tr>
                         @empty
-                            <div class="alert alert-primary">{{ __('empty Status') }}</div>
+                             @include('admin.components.alerts.empty',['colspan' => 11])
                         @endforelse
                     </tbody>
                 </table>
@@ -444,11 +427,66 @@
 
         </div>
     </div>
+
     <div class="table-area  mt-15">
         <div class="table-wrapper">
             <div class="table-header">
-                <h5 class="title">{{ __("Monthly Latest Add/Substract Balance") }}</h5>
-                <a href="{{ setRoute('admin.profit.logs.balance') }}" class="btn--base">{{__("Show More")}}</a>
+                <h5 class="title">Les dernières collectes enregistrés de la journée</h5>
+                <a href="{{ setRoute('admin.money.in.index') }}" class="btn--base">Voir plus</a>
+            </div>
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>{{ __("Ref Collecte") }}</th>
+                            <th>{{ __("Collecteur") }}</th>
+                            <th>{{ __("Client") }}</th>
+                            <th>{{ __("Montant collecte") }}</th>
+                            <th>{{ __("Charge Total") }}</th>
+                            <th>{{ __("Commisions") }}</th>
+                            <th>{{ __("Profits") }}</th>
+                            <th>{{ __("Montant total") }}</th>
+                            {{--  <th>{{ __(("Status")) }}</th>  --}}
+                            <th>{{ __("Date") }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($data['transactions2'] ?? []  as $key => $item)
+                            <tr>
+                                <td>{{ $item->trx_id }}</td>
+                                <td>
+                                    <a href="{{ setRoute('admin.agents.details',$item->creator->username) }}">{{ $item->creator->fullname }}</a>
+                                </td>
+                                <td>
+                                    <a href="{{ setRoute('admin.users.details',$item->details->receiver_username) }}">{{ $item->details->receiver_name }}</a>
+                                </td>
+                                {{--  <td>{{ get_amount($item->details->charges->sender_amount,$item->details->charges->sender_currency,2) }}</td>  --}}
+                                <td>{{ get_amount($item->details->charges->receiver_amount,$item->details->charges->receiver_currency,2) }}</td>
+                                <td>{{ get_amount($item->details->charges->total_charge,$item->details->charges->sender_currency,2) }}</td>
+                                <td>{{ get_amount($item->details->charges->agent_total_commission,$item->details->charges->sender_currency,2) }}</td>
+                                <td>{{ get_amount(($item->details->charges->total_charge - $item->details->charges->agent_total_commission),$item->details->charges->sender_currency,2) }}</td>
+                                <td>{{ get_amount($item->details->charges->payable,$item->details->charges->sender_currency,2) }}</td>
+                                {{--  <td>
+                                    <span class="{{ $item->stringStatus->class }}">{{ __($item->stringStatus->value) }}</span>
+                                </td>  --}}
+                                <td>{{ $item->created_at->format('d-m-y h:i:s A') }}</td>
+
+                            </tr>
+                        @empty
+                             @include('admin.components.alerts.empty',['colspan' => 11])
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="table-area  mt-15">
+        <div class="table-wrapper">
+            <div class="table-header">
+                <h5 class="title">Les dernières recharges effectués de la journée</h5>
+                <a href="{{ setRoute('admin.profit.logs.balance') }}" class="btn--base">Voir plus</a>
             </div>
             <div class="table-responsive">
                 <table class="custom-table">
@@ -456,18 +494,17 @@
                         <tr>
                             <th>{{ __("web_trx_id") }}</th>
                             <th>{{ __("Full Name") }}</th>
-                            <th>{{ __("User Type") }}</th>
+                            <th>{{ __("Matricule") }}</th>
                             <th>{{ __("Email") }}</th>
+                            <th>{{ __("Phone") }}</th>
                             <th>{{ __("Amount") }}</th>
                             <th>{{ __("Admin") }}</th>
                             <th>{{ __(("Status")) }}</th>
                             <th>{{ __("Time") }}</th>
-                            {{--  <th>{{__("action")}}</th>  --}}
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($data['transactions'] ??[]  as $key => $item)
-
+                        @forelse ($data['transactions']  as $key => $item)
                         <tr>
                             <td>{{ $item->trx_id }}</td>
                             <td>
@@ -478,26 +515,22 @@
                                 @endif
 
                             <td>
-                                @if($item->user_id != null)
-                                     {{ __("USER") }}
-                                @elseif($item->agent_id != null)
-                                     {{ __("AGENT") }}
-                                @elseif($item->merchant_id != null)
-                                     {{ __("MERCHANT") }}
-                                @endif
-
+                                {{ $item->creator->matricule }}
                             </td>
                             <td>
                                 {{ $item->creator->email ?? '' }}
                             </td>
+                            <td>
+                                {{ $item->creator->full_mobile ?? '' }}
+                            </td>
 
                             <td>
                                 @if($item->attribute == 'SEND')
-                                    -
+                                    <span style="color: red"> - {{ number_format($item->request_amount,2) }} {{ get_default_currency_code() }} {{ @$item->currency->name }}</span></td>
                                 @else
-                                    +
+                                    <span style="color: green"> + {{ number_format($item->request_amount,2) }} {{ get_default_currency_code() }} {{ @$item->currency->name }}</span></td>
                                 @endif
-                                 {{ number_format($item->request_amount,2) }} {{ get_default_currency_code() }} <span class="text--info">{{ @$item->currency->name }}</span></td>
+
 
                             <td>
                                 <span>{{ $item->admin()->firstname }} {{ $item->admin()->lastname }}</span>
@@ -506,16 +539,11 @@
                                 <span class="{{ $item->stringStatus->class }}">{{ __($item->stringStatus->value) }}</span>
                             </td>
                             <td>{{ $item->created_at->format('d-m-y h:i:s A') }}</td>
-                            {{--  <td>
-                                @include('admin.components.link.info-default',[
-                                    'href'          => setRoute('admin.add.money.details', $item->id),
-                                    'permission'    => "admin.add.money.details",
-                                ])
-
-                            </td>  --}}
                         </tr>
+
+
                         @empty
-                            <div class="alert alert-primary">{{ __('empty Status') }}</div>
+                             @include('admin.components.alerts.empty',['colspan' => 9])
                         @endforelse
                     </tbody>
                 </table>

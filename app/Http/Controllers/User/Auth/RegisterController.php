@@ -70,9 +70,10 @@ class RegisterController extends Controller
     public function sendVerifyCode(Request $request)
     {
         // Ajout de Stive pour l'inscription via numéro de téléphone 16/08/2024
-        if ($request->type == 'email') {
+        $type = '';
+        if (check_email($request->id)) {
             $request->validate([
-                'email' => [
+                'id' => [
                     'required',
                     function ($attribute, $value, $fail) {
                         // Validate email
@@ -80,13 +81,16 @@ class RegisterController extends Controller
                             return;
                         }
 
-                        $fail('You have choose email as ID, it must be a valid email address.');
+                        $fail('Veuillez saisir une adresse mail valide.');
                     },
                 ],
             ]);
+            $type = 'email';
+            $email = $request->id;
+            $tel = '';
         } else {
             $request->validate([
-                'email' => [
+                'id' => [
                     'required',
                     function ($attribute, $value, $fail) {
                         // Validate mobile number (adjust regex according to your format)
@@ -94,10 +98,13 @@ class RegisterController extends Controller
                             return;
                         }
 
-                        $fail('You have choose phone as ID, it must be a valid mobile number for your contry.');
+                        $fail('Veuillez saisir un numéro de téléphone valide');
                     },
                 ],
             ]);
+            $type = 'tel';
+            $email = '';
+            $tel = $request->id;
         }
 
         // Fin ajout
@@ -109,27 +116,30 @@ class RegisterController extends Controller
             $agree = '';
         }
         $validator = Validator::make($request->all(), [
-            'email'         => 'required', //|email
+            'id'         => 'required',
             'agree'         =>  $agree,
-            'type'          => 'required',
             'transitional'  => 'required',
 
         ]);
         $validated = $validator->validate();
 
         $field_name = "username";
-        if (check_email($validated['email']) || check_phone($validated['email'])) {
+        if (check_email($validated['id'])) {
             $field_name = "email";
         }
+        if (check_phone($validated['id'])) {
+            $field_name = "full_mobile";
+        }
 
-        $exist = User::where($field_name, $validated['email'])->first();
-        if ($exist) return back()->with(['error' => [__('User already  exists, please try with another email')] . "/" . [__('phone Number')]]);
+        $exist = User::where($field_name, $validated['id'])->first();
+        if ($exist) return back()->with(['error' => [__('Cet identifiant existe déjà dans la base de données. Veuillez en saisir un autre')]]);
         $code = generate_random_code();
         $data = [
             'user_id'       =>  0,
-            'email'         => $validated['email'],
+            'email'         => $email,
+            'mobile'        => $tel,
             'transitional'  => $validated['transitional'],
-            'type'          => $validated['type'],
+            'type'          => $type,
             'code'          => $code,
             'token'         => generate_unique_string("user_authorizations", "token", 200),
             'created_at'    => now(),
@@ -137,32 +147,40 @@ class RegisterController extends Controller
         DB::beginTransaction();
         try {
             if ($basic_settings->email_verification == false || $request->transitional == '1') {
-                Session::put('register_email', $validated['email']);
+                Session::put('register_email', $validated['id']);
                 Session::put('transitional', $validated['transitional']);
-                Session::put('type', $validated['type']);
+                Session::put('type', $type);
                 return redirect()->route("user.register.kyc");
             }
             DB::table("user_authorizations")->insert($data);
-            Session::put('register_email', $validated['email']);
+            Session::put('register_email', $validated['id']);
             Session::put('transitional', $validated['transitional']);
-            Session::put('type', $validated['type']);
-            try {
-                if ($validated['type'] == 'email') {
+            Session::put('type', $type);
+            // try {
+                if ($type == 'email') {
                     if ($basic_settings->email_notification == true && $basic_settings->email_verification == true) {
-                        Notification::route("mail", $validated['email'])->notify(new SendVerifyCode($validated['email'], $code));
+                        Notification::route("mail", $email)->notify(new SendVerifyCode($email, $code));
                     }
+                    DB::commit();
                 } else {
                     // Envoie OTP via SMS 16/08/2024
                     $dataSend = [
-                        'recipient' => '237' . $validated['email'],
-                        'message'   => "Here is your OTP: " . $code . " ",
+                        'recipient' => '237' . $tel,
+                        'message'   => "Votre OTP: " . $code . " ",
                     ];
-                    GlobalController::send_sms($dataSend);
+                    $return = GlobalController::send_sms($dataSend);
+
+                    if ($return['status'] == '1') {
+                        DB::commit();
+                        return back()->with(['success' => [__("OTP send successfully!")]]);
+                    } else {
+                        DB::rollBack();
+                        return back()->with(['error' => [__("L'OTP n'a pas pu être envoyé")]]);
+                    }
                 }
-            } catch (Exception $e) {
+            /* } catch (Exception $e) {
                 //
-            }
-            DB::commit();
+            } */
         } catch (Exception $e) {
             DB::rollBack();
             return back()->with(['error' => [__('Something went wrong! Please try again.')]]);
@@ -199,10 +217,17 @@ class RegisterController extends Controller
     }
     public function resendCode()
     {
-        $email = session()->get('register_email');
-        $type = session()->get('type');
+         $type = session()->get('type');
+        if($type == 'email'){
+            $email = session()->get('register_email');
+            $tel = '';
+            $resend = UserAuthorization::where("email", $email)->first();
+        } else {
+            $tel = session()->get('register_email');
+            $email = '';
+            $resend = UserAuthorization::where("mobile", $tel)->first();
+        }
         $transitional = session()->get('transitional');
-        $resend = UserAuthorization::where("email", $email)->first();
         if ($resend) {
             if (Carbon::now() <= $resend->created_at->addMinutes(GlobalConst::USER_VERIFY_RESEND_TIME_MINUTE)) {
                 throw ValidationException::withMessages([
@@ -216,6 +241,7 @@ class RegisterController extends Controller
         $data = [
             'user_id'       =>  0,
             'email'         => $email,
+            'mobile'        => $tel,
             'code'          => $code,
             'transitional'  => $transitional,
             'type'          => $type,
@@ -224,27 +250,35 @@ class RegisterController extends Controller
         ];
         DB::beginTransaction();
         try {
-            $oldToken = UserAuthorization::where("email", $email)->get();
+            $oldToken = $resend;
             if ($oldToken) {
                 foreach ($oldToken as $token) {
                     $token->delete();
                 }
             }
             DB::table("user_authorizations")->insert($data);
-            try {
+            // try {
                 if ($type == 'email') {
                     Notification::route("mail", $email)->notify(new SendVerifyCode($email, $code));
+                    DB::commit();
                 } else {
-                    // Envoie OTP via SMS 16/08/2024
-                    $dataSend = [
-                        'recipient' => '237' . $email,
-                        'message'   => "Here is your OTP: " . $code . " ",
+                     // Envoie OTP via SMS 16/08/2024
+                     $dataSend = [
+                        'recipient' => '237' . $tel,
+                        'message'   => "Votre OTP: " . $code . " ",
                     ];
-                    GlobalController::send_sms($dataSend);
+                    $return = GlobalController::send_sms($dataSend);
+
+                    if ($return['status'] == '1') {
+                        DB::commit();
+                        return back()->with(['success' => [__("OTP send successfully!")]]);
+                    } else {
+                        DB::rollBack();
+                        return back()->with(['error' => [__("L'OTP n'a pas pu être envoyé")]]);
+                    }
                 }
-            } catch (Exception $e) {
-                //
-            }
+            /* } catch (Exception $e) {
+            } */
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
@@ -255,12 +289,21 @@ class RegisterController extends Controller
     public function registerKyc(Request $request)
     {
         $basic_settings   = $this->basic_settings;
-        $email =   session()->get('register_email');
         $type = session()->get('type');
         $transitional = session()->get('transitional');
-        if ($email == null || $type == null || $transitional == null) {
+
+        if ($type == null || $transitional == null) {
             return redirect()->route('user.register');
         }
+
+        if($type == 'email'){
+            $email = session()->get('register_email');
+            $mobile = null;
+        } else {
+            $mobile = session()->get('register_email');
+            $email = null;
+        }
+
         $kyc_fields = [];
         if ($basic_settings->kyc_verification == true) {
             $user_kyc = SetupKyc::userKyc()->first();
@@ -276,6 +319,8 @@ class RegisterController extends Controller
         return view('user.auth.register-kyc', compact(
             'page_title',
             'email',
+            'mobile',
+            'transitional',
             'kyc_fields'
 
         ));
@@ -307,7 +352,7 @@ class RegisterController extends Controller
             return $this->breakAuthentication($e->getMessage());
         }
 
-        $validated['mobile']        = remove_speacial_char($validated['phone']);
+        $validated['mobile']        = remove_speacial_char($validated['mobile']);
         $validated['mobile_code']   = remove_speacial_char($validated['phone_code']);
         $complete_phone             = $validated['mobile_code'] . $validated['mobile'];
 
@@ -316,20 +361,22 @@ class RegisterController extends Controller
                 'phone'     => __('Phone number is already exists'),
             ]);
         }
-        $validated['lastname'] = $request['lastname'];
+
         $userName = make_username($validated['firstname'], $validated['lastname']);
         $check_user_name = User::where('username', $userName)->first();
         if ($check_user_name) {
             $userName = $userName . '-' . rand(123, 456);
         }
 
+        $password = generate_unique_string("users", "remember_token", 8);
         $validated['full_mobile']       = $complete_phone;
         $validated = Arr::except($validated, ['agree', 'phone_code', 'phone']);
         // $validated['email_verified']    = ($basic_settings->email_verification == true) ? false : true;
         $validated['email_verified']    = true;
         $validated['sms_verified']      = ($basic_settings->sms_verification == true) ? false : true;
         $validated['kyc_verified']      = ($basic_settings->kyc_verification == true) ? false : true;
-        $validated['password']          = Hash::make($validated['password']);
+        $validated['password']          = Hash::make($password);
+        $validated['remember_token']    = $password;
         $validated['type']              = $type;
         $validated['transitional']      = $transitional;
         $validated['username']          = $userName;
@@ -340,35 +387,56 @@ class RegisterController extends Controller
             'state' => '',
             'address' => '',
         ];
-        $data = event(new Registered($user = $this->create($validated)));
-        if ($data && $basic_settings->kyc_verification == true) {
-            $create = [
-                'user_id'       => $user->id,
-                'data'          => json_encode($get_values),
-                'created_at'    => now(),
-            ];
+        try {
+            $data = event(new Registered($user = $this->create($validated)));
+            if ($data && $basic_settings->kyc_verification == true) {
+                $create = [
+                    'user_id'       => $user->id,
+                    'data'          => json_encode($get_values),
+                    'created_at'    => now(),
+                ];
 
-            DB::beginTransaction();
-            try {
-                DB::table('user_kyc_data')->updateOrInsert(["user_id" => $user->id], $create);
-                $user->update([
-                    'kyc_verified'  => GlobalConst::PENDING,
-                ]);
-                DB::commit();
-            } catch (Exception $e) {
-                DB::rollBack();
-                $user->update([
-                    'kyc_verified'  => GlobalConst::DEFAULT,
-                ]);
+                DB::beginTransaction();
+                try {
+                    DB::table('user_kyc_data')->updateOrInsert(["user_id" => $user->id], $create);
+                    $user->update([
+                        'kyc_verified'  => GlobalConst::PENDING,
+                    ]);
+                    DB::commit();
+                } catch (Exception $e) {
+                    DB::rollBack();
+                    $user->update([
+                        'kyc_verified'  => GlobalConst::DEFAULT,
+                    ]);
 
-                return back()->with(['error' => [__('Something went wrong! Please try again.')]]);
+                    return back()->with(['error' => [__('Something went wrong! Please try again.')]]);
+                }
             }
+        } catch (Exception $e) {
+            return back()->with(['error' => [__($e->getMessage())]]);
         }
+
+        /* try {
+            if ($type == 'email') {
+                Notification::route("mail", $validated['email'])->notify(new SendVerifyCode($validated['email'], $password));
+            } else {
+                 // Envoie OTP via SMS 16/08/2024
+                 $dataSend = [
+                    'recipient' => $validated['full_mobile'],
+                    'message'   => "Votre mot de passe : " . $password . " ",
+                ];
+                $return = GlobalController::send_sms($dataSend);
+            }
+        } catch (Exception $e) {
+            //
+        } */
+
         $request->session()->forget('register_info');
+        $this->registered($request, $user);
+        return redirect()->route("admin.dashboard")->with(['success' => [__('Client enrolé avec succes')]]);
+        // $this->guard()->login($user);
 
-        $this->guard()->login($user);
-
-        return $this->registered($request, $user);
+        // return $this->registered($request, $user);
     }
 
 
@@ -394,14 +462,16 @@ class RegisterController extends Controller
 
         return Validator::make($data, [
             'firstname'     => 'required|string|max:60',
-            // 'lastname'      => 'required|string|max:60',
-            'email'         => 'required|string|max:150|unique:users,email', // |email
-            'password'      => $passowrd_rule,
+            'lastname'      => 'nullable|string|max:60',
+            'matricule'     => 'nullable|string|max:60|unique:users,matricule',
+            'email'         => 'nullable|string|max:150|unique:users,email', // |email
+            // 'password'      => $passowrd_rule,
             'country'       => 'required|string|max:150',
             'city'          => 'required|string|max:150',
             'phone_code'    => 'required|string|max:10',
-            'phone'         => 'required|string|max:20',
-            // 'zip_code'      => 'required|string|max:8',
+            'mobile'         => 'required|string|max:20|unique:users,mobile',
+            'rib'           => 'required|string',
+            'zip_code'      => 'nullable|string|max:8',
             'agree'         =>  $agree,
         ]);
     }
@@ -428,11 +498,11 @@ class RegisterController extends Controller
      */
     protected function registered(Request $request, $user)
     {
-        $user->createQr();
+        // $user->createQr();
         $this->createUserWallets($user);
         $this->registerNotificationToAdmin($user);
         // return redirect()->intended(route('user.dashboard'));
-        $this->guard()->logout($user);
-        return redirect()->intended(route('user.login'));
+        // $this->guard()->logout($user);
+        // return redirect()->intended(route('admin.login'));
     }
 }

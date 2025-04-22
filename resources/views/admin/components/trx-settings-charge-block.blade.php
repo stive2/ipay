@@ -1,6 +1,6 @@
 <div class="custom-card mb-10">
     <div class="card-header">
-        <h6 class="title">{{ __($title) ?? "" }}</h6>
+        <h6 class="title">Paramètres des charges</h6>
     </div>
     <div class="card-body">
         {{--  <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 form-group">
@@ -22,19 +22,19 @@
                 <div class="{{ $item->agent_profit == true ? 'col-xl-4 col-lg-4': 'col-xl-6 col-lg-6 '}} mb-10">
                     <div class="custom-inner-card">
                         <div class="card-inner-header">
-                            <h5 class="title">{{ __("Range") }}</h5>
+                            <h5 class="title">Montant de collecte</h5>
                         </div>
                         <div class="card-inner-body">
                             <div class="row">
                                 <div class="col-xxl-12 col-xl-6 col-lg-6  form-group">
-                                    <label>{{ __("Minimum amount") }}</label>
+                                    <label>Montant minimum</label>
                                     <div class="input-group">
                                         <input type="text" class="form--control number-input" value="{{ old($data->slug.'_min_limit',$data->min_limit) }}" name="{{$data->slug}}_min_limit">
                                         <span class="input-group-text">{{ get_default_currency_code($default_currency) }}</span>
                                     </div>
                                 </div>
                                 <div class="col-xxl-12 col-xl-6 col-lg-6 form-group">
-                                    <label>{{ __("Maximum amount") }}</label>
+                                    <label>Montant maximum</label>
                                     <div class="input-group">
                                         <input type="text" class="form--control number-input" value="{{ old($data->slug.'_max_limit',$data->max_limit) }}" name="{{$data->slug}}_max_limit">
                                         <span class="input-group-text">{{ get_default_currency_code($default_currency) }}</span>
@@ -47,19 +47,19 @@
                 <div class="{{ $item->agent_profit == true ? 'col-xl-4 col-lg-4': 'col-xl-6 col-lg-6 '}} mb-10">
                     <div class="custom-inner-card">
                         <div class="card-inner-header">
-                            <h5 class="title">{{ __("Charges") }}</h5>
+                            <h5 class="title">Charges (les 2 sont dissociables)</h5>
                         </div>
                         <div class="card-inner-body">
                             <div class="row">
                                 <div class="col-xxl-12 col-xl-6 col-lg-6 form-group">
-                                    <label>{{ __("Fixed Charge*") }}</label>
+                                    <label>Charges fixes</label>
                                     <div class="input-group">
                                         <input type="text" class="form--control number-input" value="{{ old($data->slug.'_fixed_charge',$data->fixed_charge) }}" name="{{$data->slug}}_fixed_charge">
                                         <span class="input-group-text">{{ get_default_currency_code($default_currency) }}</span>
                                     </div>
                                 </div>
                                 <div class="col-xxl-12 col-xl-6 col-lg-6 form-group">
-                                    <label>{{ __("Percent Charge*") }}</label>
+                                    <label>Frais en %</label>
                                     <div class="input-group">
                                         <input type="text" class="form--control number-input" value="{{ old($data->slug.'_percent_charge',$data->percent_charge) }}" name="{{$data->slug}}_percent_charge">
                                         <span class="input-group-text">%</span>
@@ -73,19 +73,19 @@
                 <div class="col-xl-4 col-lg-4 mb-10">
                     <div class="custom-inner-card">
                         <div class="card-inner-header">
-                            <h5 class="title-agent">{{ __("Agent Profits") }}</h5>
+                            <h5 class="title-agent">Commissions des agents (compris dans les charges)</h5>
                         </div>
                         <div class="card-inner-body">
                             <div class="row">
                                 <div class="col-xxl-12 col-xl-6 col-lg-6 form-group">
-                                    <label>{{ __("Fixed Commissions") }}</label>
+                                    <label>Commissions fixes</label>
                                     <div class="input-group">
                                         <input type="text" class="form--control number-input" value="{{ old($data->slug.'_agent_fixed_commissions',$data->agent_fixed_commissions) }}" name="{{$data->slug}}_agent_fixed_commissions">
                                         <span class="input-group-text">{{ get_default_currency_code($default_currency) }}</span>
                                     </div>
                                 </div>
                                 <div class="col-xxl-12 col-xl-6 col-lg-6 form-group">
-                                    <label>{{ __("Percent Commissions") }}</label>
+                                    <label>Commissions en %</label>
                                     <div class="input-group">
                                         <input type="text" class="form--control number-input" value="{{ old($data->slug.'_agent_percent_commissions',$data->agent_percent_commissions) }}" name="{{$data->slug}}_agent_percent_commissions">
                                         <span class="input-group-text">%</span>
