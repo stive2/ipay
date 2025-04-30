@@ -21,6 +21,7 @@ use App\Constants\SupportTicketConst;
 use App\Http\Helpers\Api\Helpers;
 use App\Models\Admin\Admin;
 use App\Models\Admin\CountryRestriction;
+use App\Models\Admin\Currency;
 use App\Models\Admin\ExchangeRate;
 use App\Models\Admin\GatewayAPi;
 use App\Models\Admin\Language;
@@ -110,6 +111,13 @@ function all_countries($item = [])
     }, $countries);
 
     return json_decode(json_encode($countries));
+}
+
+function all_currencies()
+{
+    $currencies = Currency::orderByDesc('default')->get();
+
+    return json_decode(json_encode($currencies));
 }
 
 function get_country_phone_code($country)

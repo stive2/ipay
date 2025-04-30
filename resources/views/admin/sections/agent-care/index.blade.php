@@ -48,13 +48,13 @@
                         'href'          => setRoute('agent.register'),
                     ])
                 </div>
-                <div class="table-btn-area">
+                {{--  <div class="table-btn-area">
                     @include('admin.components.button.custom',[
                         'type'          => "button",
                         'class'         => "empty-wallet w-100 bg--danger",
                         'text'          => "Vider les wallets",
                     ])
-                </div>
+                </div>  --}}
                 <div class="table-btn-area">
                     @include('admin.components.search-input',[
                         'name'  => 'agent_search',

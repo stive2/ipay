@@ -48,7 +48,7 @@
                         </div>
                         <div class="col-xl-3 col-lg-3 form-group">
                             @include('admin.components.form.input',[
-                                 'label'         => __('Symbol').'*',
+                                'label'         => __('Symbol').'*',
                                 'name'          => 'symbol',
                                 'value'         => old('symbol')
                             ])
@@ -66,7 +66,7 @@
                                 'label'         => 'Role*',
                                 'name'          => 'role',
                                 'value'         => old('role','both'),
-                                'options'       => ['Both' => 'both', 'Sender' => 'sender', 'Receiver' => 'receiver'],
+                                'options'       => ['Both' => 'both'], // , 'Sender' => 'sender', 'Receiver' => 'receiver'
                             ])
                         </div>
                         <div class="col-xl-12 col-lg-12 form-group">

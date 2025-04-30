@@ -31,7 +31,14 @@
             @includeUnless($default_currency,'admin.components.alerts.warning',['message' => __("There is no default currency in your system.")])
             <div class="table-header">
                 <h5 class="title">{{ __("Configuration devise") }}</h5>
-
+                <div class="table-btn-area">
+                    @include('admin.components.link.add-default',[
+                        'href'          => "#currency-add",
+                        'class'         => "py-2 px-4 modal-btn",
+                        'text'          => __("Add New"),
+                        'permission'    => "admin.currencies.store",
+                    ])
+                </div>
             </div>
             <div class="table-responsive">
                 @include('admin.components.data-table.currency-table',[
@@ -72,9 +79,9 @@
                     console.log(readOnly);
                 }
 
-                selectedValue.parents("form").find("input[name=name],input[name=currency_name]").val(currencyName).prop("readonly",readOnly);
-                selectedValue.parents("form").find("input[name=code],input[name=currency_code]").val(currencyCode).prop("readonly",readOnly);
-                selectedValue.parents("form").find("input[name=symbol],input[name=currency_symbol]").val(currencySymbol).prop("readonly",readOnly);
+                selectedValue.parents("form").find("input[name=name],input[name=currency_name]").val(currencyName);//.prop("readonly",readOnly);
+                selectedValue.parents("form").find("input[name=code],input[name=currency_code]").val(currencyCode);//.prop("readonly",readOnly);
+                selectedValue.parents("form").find("input[name=symbol],input[name=currency_symbol]").val(currencySymbol);//.prop("readonly",readOnly);
                 selectedValue.parents("form").find(".selcted-currency").text(currencyCode);
             });
 
@@ -100,9 +107,9 @@
 
         function readOnlyAddRemove (select,readOnly) {
             var selectedValue = $(select);
-            selectedValue.parents("form").find("input[name=name],input[name=currency_name]").prop("readonly",readOnly);
-            selectedValue.parents("form").find("input[name=code],input[name=currency_code]").prop("readonly",readOnly);
-            selectedValue.parents("form").find("input[name=symbol],input[name=currency_symbol]").prop("readonly",readOnly);
+            selectedValue.parents("form").find("input[name=name],input[name=currency_name]");//.prop("readonly",readOnly);
+            selectedValue.parents("form").find("input[name=code],input[name=currency_code]");//.prop("readonly",readOnly);
+            selectedValue.parents("form").find("input[name=symbol],input[name=currency_symbol]");//.prop("readonly",readOnly);
             // selectedValue.parents("form").find(".selcted-currency").text(currencyCode);
         }
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\TrxSettingsController;
 use App\Http\Controllers\Admin\AddMoneyController;
 use App\Http\Controllers\Admin\AdminCareController;
+use App\Http\Controllers\Admin\AgenceController;
 use App\Http\Controllers\Admin\AgentCareController;
 use App\Http\Controllers\Admin\AppOnboardScreensController;
 use App\Http\Controllers\Admin\AppSettingsController;
@@ -89,6 +90,19 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('delete', 'delete')->name('delete');
         Route::post('search', 'search')->name("search");
     });
+
+    // Setup Agence Section
+    Route::controller(AgenceController::class)->prefix('agence')->name('agence.')->group(function () {
+        Route::get('index', 'index')->name('index');
+        Route::post('store', 'store')->name('store');
+        Route::put('status/update', 'statusUpdate')->name('status.update');
+        Route::put('update', 'update')->name('update');
+        Route::delete('delete', 'delete')->name('delete');
+        Route::post('search', 'search')->name("search");
+        Route::post('import', 'importData')->name('import');
+        Route::get('export', 'exportData')->name('export');
+    });
+
     // Exchange rate
     Route::controller(ExchangeRateController::class)->prefix('exchange-rate')->name('exchange.rate.')->group(function () {
         Route::get('index', 'index')->name('index');

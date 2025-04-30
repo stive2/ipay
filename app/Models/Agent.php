@@ -98,9 +98,9 @@ class Agent extends Authenticatable
         return $this->firstname . ' ' . $this->lastname;
     }
 
-    public function wallet()
+    public function wallets()
     {
-        return $this->hasOne(AgentWallet::class, 'agent_id');
+        return $this->hasMany(AgentWallet::class, 'agent_id');
     }
 
     public function getAgentImageAttribute()

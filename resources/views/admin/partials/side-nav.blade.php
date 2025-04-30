@@ -39,11 +39,16 @@
                             'route'     => "admin.currency.index",
                             'icon'      => "menu-icon las la-coins",
                         ],
-                        {{--  [
+                        [
+                            'title'     => "Configuration agences",
+                            'route'     => "admin.agence.index",
+                            'icon'      => "menu-icon las la-building",
+                        ],
+                        [
                             'title'     => __("Exchange Rate"),
                             'route'     => "admin.exchange.rate.index",
                             'icon'      => "menu-icon las la-wallet",
-                        ],  --}}
+                        ],
                         [
                             'title'     => "Config. Commissions",
                             'route'     => "admin.trx.settings.index",

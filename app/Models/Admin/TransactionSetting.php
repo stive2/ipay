@@ -12,6 +12,7 @@ class TransactionSetting extends Model
     protected $with = ['admin'];
     protected $casts = [
         'admin_id' => 'integer',
+        'currency_id' => 'integer',
         'slug' => 'string',
         'title' => 'string',
         'fixed_charge' => 'double',
@@ -33,5 +34,10 @@ class TransactionSetting extends Model
     public function admin()
     {
         return $this->belongsTo(Admin::class);
+    }
+
+    public function currency()
+    {
+        return $this->belongsTo(Currency::class);
     }
 }

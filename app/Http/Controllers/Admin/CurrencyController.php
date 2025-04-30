@@ -11,6 +11,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Http\Helpers\Response;
+use App\Models\Agent;
+use App\Models\AgentWallet;
+use App\Models\User;
+use App\Models\UserWallet;
+use Illuminate\Support\Facades\DB;
 
 class CurrencyController extends Controller
 {
@@ -101,11 +106,16 @@ class CurrencyController extends Controller
 
         $validated = Arr::except($validated,['role','flag','option']);
         // insert_data
-        try{
-            $currency = Currency::create($validated);
-        }catch(Exception $e) {
+        $datas[] = $validated;
+        DB::beginTransaction();
+        // try{
+            $currency = DB::table("currencies")->insert($datas);
+            $this->registered();
+            DB::commit();
+        /* }catch(Exception $e) {
+            DB::rollBack();
             return back()->withErrors($validator)->withInput()->with(['error' => [__("Something went wrong! Please try again.")]]);
-        }
+        } */
 
         // Uplaod File
         if($request->hasFile('flag')) {
@@ -114,7 +124,7 @@ class CurrencyController extends Controller
                 $uploadFlag = upload_files_from_path_dynamic($image,'currency-flag');
 
                 // Update Database
-                $currency->update([
+                Currency::where('code', $validated['code'])->update([
                     'flag'  => $uploadFlag,
                 ]);
             }catch(Exception $e) {
@@ -123,6 +133,61 @@ class CurrencyController extends Controller
         }
 
         return back()->with(['success' => [__("Currency Saved Successfully!")]]);
+    }
+
+    protected function registered()
+    {
+        $agents = Agent::all();
+                    // ->toArray();
+
+        foreach($agents as $row => $agent) {
+            $this->createAgentWallets($agent);
+        }
+
+        $users = User::all();
+                    // ->toArray();
+
+        foreach($users as $row => $user) {
+            $this->createUserWallets($user);
+        }
+    }
+
+    protected function createAgentWallets($agent){
+        $currencies = Currency::active()->roleHasOne()->pluck("id")->toArray();
+        $wallets = [];
+        foreach($currencies as $currency_id) {
+            if($agent->wallets()->where('currency_id',$currency_id)->count() > 0) {
+                continue;
+            }
+            $wallets[] = [
+                'agent_id'      => $agent->id,
+                'currency_id'   => $currency_id,
+                'balance'       => 0,
+                'status'        => true,
+                'created_at'    => now(),
+            ];
+        }
+
+        DB::table("agent_wallets")->insert($wallets);
+    }
+
+    protected function createUserWallets($user){
+        $currencies = Currency::active()->roleHasOne()->pluck("id")->toArray();
+        $wallets = [];
+        foreach($currencies as $currency_id) {
+            if($user->wallets()->where('currency_id',$currency_id)->count() > 0) {
+                continue;
+            }
+            $wallets[] = [
+                'user_id'      => $user->id,
+                'currency_id'   => $currency_id,
+                'balance'       => 0,
+                'status'        => true,
+                'created_at'    => now(),
+            ];
+        }
+
+        DB::table("user_wallets")->insert($wallets);
     }
 
 
@@ -182,20 +247,63 @@ class CurrencyController extends Controller
             'currency_code'      => ['required','string',Rule::unique('currencies','code')->ignore($currency->id)],
             'currency_symbol'    => 'required|string',
             'currency_target'    => 'nullable|string',
+            'currency_type'      => 'required|string',
+            'currency_role'      => 'required|string',
+            'currency_option'    => 'required|string',
+            'currency_flag'      => 'nullable|image|mimes: jpg,png,jpeg,svg,webp',
+            'currency_rate'      => 'required',
         ]);
         if($validator->fails()) {
             return back()->withErrors($validator)->withInput()->with('modal','currency_edit');
         }
         $validated = $validator->validate();
 
+        $roles = [
+            'both'  => [
+                'sender'    => true,
+                'receiver'  => true,
+            ],
+            'sender'    => [
+                'sender'    => true,
+                'receiver'  => false,
+            ],
+            'receiver'  => [
+                'sender'    => false,
+                'receiver'  => true,
+            ]
+        ];
+        foreach($roles as $key => $item) {
+            if($key == $validated['currency_role']) {
+                foreach($item as $column => $value) {
+                    $validated[$column] = $value;
+                }
+            }
+        }
+
         $default = [
             '1' => true,
             '0'  => false,
         ];
 
+        // If Default is already available
+        if($default[$validated['currency_option']] == true) {
+            $check_default = Currency::where('default',true);
+            if($check_default->count() > 0 && $check_default->first()->code != $currency->code) {
+                try{
+                    $check_default->update([
+                        'default'       => false,
+                    ]);
+                }catch(Exception $e) {
+                    return back()->with(['error' => [__("Default currency make failed! Please try again.")]]);
+                }
+            }
+        }
 
-        $validated['currency_default']   = true;
-        $validated = Arr::except($validated,['currency_role','currency_flag','currency_option']);
+        $validated['currency_type']          = strtoupper($validated['currency_type']);
+        $validated['currency_default']       = $default[$validated['currency_option']];
+
+        // $validated['currency_default']   = true;
+        $validated = Arr::except($validated,['currency_flag']); // ,'currency_role','currency_option'
 
         if($request->hasFile('currency_flag')) {
             try{

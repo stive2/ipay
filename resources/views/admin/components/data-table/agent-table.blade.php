@@ -6,12 +6,12 @@
             <th>{{ __("Email") }}</th>
             <th>{{ __("Matricule") }}</th>
             <th>{{ __("Phone") }}</th>
-            @if (Route::currentRouteName() == "admin.agents.index" || Route::currentRouteName() == "admin.agents.active" || Route::currentRouteName() == "admin.agents.locate")
+            {{--  @if (Route::currentRouteName() == "admin.agents.index" || Route::currentRouteName() == "admin.agents.active" || Route::currentRouteName() == "admin.agents.locate")
                 <th>{{ __("Solde") }}</th>
             @endif
             @if (Route::currentRouteName() == "admin.agents.index" || Route::currentRouteName() == "admin.agents.active" || Route::currentRouteName() == "admin.agents.locate")
                 <th>{{ __("Commissions") }}</th>
-            @endif
+            @endif  --}}
             <th>{{__("Status") }}</th>
             @if (Route::currentRouteName() == "admin.agents.active")
                 <th>{{__("First MDP") }}</th>
@@ -28,12 +28,12 @@
                 <td>{{ $item->email }}</td>
                 <td>{{ $item->matricule }}</td>
                 <td>{{ $item->full_mobile }}</td>
-                @if (Route::currentRouteName() == "admin.agents.index" || Route::currentRouteName() == "admin.agents.active" || Route::currentRouteName() == "admin.agents.locate")
+                {{--  @if (Route::currentRouteName() == "admin.agents.index" || Route::currentRouteName() == "admin.agents.active" || Route::currentRouteName() == "admin.agents.locate")
                     <td>{{ get_amount($item->wallet->balance,get_default_currency_code())}}</td>
                 @endif
                 @if (Route::currentRouteName() == "admin.agents.index" || Route::currentRouteName() == "admin.agents.active" || Route::currentRouteName() == "admin.agents.locate")
                     <td>{{ get_amount($item->commissions,get_default_currency_code())}}</td>
-                @endif
+                @endif  --}}
                 <td>
                     @if (Route::currentRouteName() == "admin.agents.kyc.unverified")
                         <span class="{{ $item->kycStringStatus->class }}">{{ __($item->kycStringStatus->value ) }}</span>

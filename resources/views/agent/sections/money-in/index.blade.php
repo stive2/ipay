@@ -37,7 +37,7 @@
                                         <code class="d-block text-center"><span class="fees-show">--</span> <span class="limit-show">--</span></code>
                                     </div>
                                 </div>
-                                <div class="col-xxl-6 col-xl-12 col-lg-6 form-group paste-wrapper">
+                                <div class="col-xxl-12 col-xl-12 col-lg-12 form-group paste-wrapper">
                                     <label>{{ __("ID") }} ({{ __("User") }})<span class="text--base">*</span></label>
                                     <div class="input-group">
                                         <div class="input-group-prepend">
@@ -50,12 +50,23 @@
 
                                 </div>
 
-                                <div class="col-xxl-6 col-xl-12 col-lg-6 form-group">
+                                <div class="col-xxl-12 col-xl-12 col-lg-12 form-group">
                                     <label>{{ __("Amount") }}<span>*</span></label>
                                     <div class="input-group">
-                                        <input type="text" class="form--control number-input" required placeholder="{{__('enter Amount')}}" name="amount">
-                                        <select class="form--control nice-select currency" name="currency">
-                                            <option value="{{ get_default_currency_code() }}">{{ get_default_currency_code() }}</option>
+                                        <input type="number" min="0" step="0.01" class="form--control number-input" required placeholder="{{ __('enter Amount') }}" name="amount">
+
+                                        <select class="form--control nice-select currency currency-select" name="currency">
+                                            <option disabled selected>{{ __("Select User Wallet") }}</option>
+                                            @foreach (all_currencies() ?? [] as $item)
+                                                <option
+                                                    value="{{ $item->id }}"
+                                                    name="{{ $item->name }}"
+                                                    code="{{ $item->code }}"
+                                                    symbol="{{ $item->symbol }}"
+                                                >
+                                                    {{ $item->code }}
+                                                </option>
+                                            @endforeach
                                         </select>
                                     </div>
                                     <code class="d-block mt-10 text-end text--warning balance-show">{{ __("Available Balance") }} {{ authWalletBalance() }} {{ get_default_currency_code() }}</code>
@@ -209,7 +220,11 @@
                         <div class="input-group">
                             <input readonly type="text" class="form--control number-input montant" required placeholder="{{__('enter Amount')}}" name="amount" id="montant">
                             <select class="form--control nice-select currency" name="currency">
-                                <option value="{{ get_default_currency_code() }}">{{ get_default_currency_code() }}</option>
+                                {{--  <option value="{{ get_default_currency_code() }}">{{ get_default_currency_code() }}</option>  --}}
+                                <option disabled selected>{{ __("Select User Wallet") }}</option>
+                                  @foreach (all_currencies() ?? [] as $item)
+                                      <option value="{{ $item->id }}">{{ $item->code }}</option>
+                                  @endforeach
                             </select>
                         </div>
                         <code class="d-block mt-10 text-end text--warning balance-show">{{ __("Available Balance") }} {{ authWalletBalance() }} {{ get_default_currency_code() }}</code>
@@ -280,17 +295,6 @@
                         </div>
 
                     </div>
-                    {{--  <div class="col-xl-12 col-lg-12 form-group" id="show_hide_password">
-                        <label>Confirm the operation with your password<span class="text--base">*</span></label>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text copytext"><span>{{ __("Password") }}</span></span>
-                            </div>
-                            <input type="password" required class="form-control form--control" name="password" placeholder="{{ __('enter Password') }}">
-
-                            <a href="javascript:void(0)" class="show-pass"><i class="fa fa-eye-slash" aria-hidden="true"></i></a>
-                        </div>
-                    </div>  --}}
                     <div class="col-xl-12 col-lg-12 form-group">
                         <label>Mettre à jour le numéro de téléphone du client<span class="text--base">*</span></label>
                         <div class="input-group">
@@ -397,32 +401,35 @@
      var defualCurrencyRate = "{{ get_default_currency_rate() }}";
 
         $(document).ready(function(){
+            $(document).on("change",".currency-select",function() {
+                var selectedValue = $(this).find(":selected");
+                var currencyName = selectedValue.attr("name");
+                var currencyCode = selectedValue.attr("code");
+                var currencySymbol = selectedValue.attr("symbol");
+
+                $("input[name=currency_name]").val(currencyName);
+                $("input[name=currency_code]").val(currencyCode);
+                $("input[name=currency_symbol]").val(currencySymbol);
+
+                getLimit();
+                getFees();
+                getPreview(currencyCode);
+            });
 
             getLimit();
             getFees();
             getPreview();
-
-            $("#show_hide_password a").on('click', function(event) {
-                event.preventDefault();
-                if($('#show_hide_password input').attr("type") == "text"){
-                    $('#show_hide_password input').attr('type', 'password');
-                    $('#show_hide_password i').addClass( "fa-eye-slash" );
-                    $('#show_hide_password i').removeClass( "fa-eye" );
-                }else if($('#show_hide_password input').attr("type") == "password"){
-                    $('#show_hide_password input').attr('type', 'text');
-                    $('#show_hide_password i').removeClass( "fa-eye-slash" );
-                    $('#show_hide_password i').addClass( "fa-eye" );
-                }
-            });
         });
+
         $("input[name=amount]").keyup(function(){
              getFees();
              getPreview();
         });
+
         $(".wallet-balance-update-btn").click(function(){
             $('input[id=user]').val($("input[name=email]").val());
             $('input[id=montant]').val($("input[name=amount]").val());
-            if($("input[name=email]").val() && $("input[name=email]").val()) {
+            if($("input[name=email]").val() && $("input[name=amount]").val()) {
                 openModalBySelector("#wallet-balance-update-modal");
             }
 
@@ -485,8 +492,10 @@
             }
         }
         function acceptVar() {
-            var selectedVal = $("select[name=currency] :selected");
-            var currencyCode = $("select[name=currency] :selected").val();
+            var selectedVal = $(this).find(":selected");
+            var currencyCode = selectedVal.attr("code");
+            // var selectedVal = $("select[name=currency] :selected");
+            // var currencyCode = $("select[name=currency] :selected").val();
             var currencyRate = defualCurrencyRate;
             var currencyMinAmount ="{{getAmount($moneyInCharge->min_limit)}}"
             var currencyMaxAmount = "{{getAmount($moneyInCharge->max_limit)}}"
@@ -539,13 +548,13 @@
             }
             $(".fees-show").html("{{ __('Transfer Fee') }} " + parseFloat(charges.fixed).toFixed(2) + " " + currencyCode + " + " + parseFloat(charges.percent).toFixed(2) + "%  ");
         }
-        function getPreview() {
+        function getPreview(currencyCode) {
                 var senderAmount = $("input[name=amount]").val();
-                var sender_currency = acceptVar().currencyCode;
+                var sender_currency = currencyCode;
                 var sender_currency_rate = acceptVar().currencyRate;
                 senderAmount == "" ? senderAmount = 0 : senderAmount = senderAmount;
                 // Sending Amount
-                $('.request-amount').text(senderAmount + " " + defualCurrency);
+                $('.request-amount').text(senderAmount + " " + sender_currency);
 
                 // Fees
                 var charges = feesCalculation();
@@ -581,4 +590,137 @@
 
 </script>
 
+{{--  <script>
+    const defualCurrency = @json(get_default_currency_code());
+    const defualCurrencyRate = @json(get_default_currency_rate());
+    const moneyInCharge = {
+        min_limit: parseFloat("{{ getAmount($moneyInCharge->min_limit) }}"),
+        max_limit: parseFloat("{{ getAmount($moneyInCharge->max_limit) }}"),
+        fixed_charge: parseFloat("{{ getAmount($moneyInCharge->fixed_charge) }}"),
+        percent_charge: parseFloat("{{ getAmount($moneyInCharge->percent_charge) }}")
+    };
+
+    $(document).ready(function () {
+        $(".currency-select").on("change", function () {
+            const selected = $(this).find(":selected");
+            const currencyName = selected.attr("name");
+            const currencyCode = selected.attr("code");
+            const currencySymbol = selected.attr("symbol");
+
+            $("input[name=currency_name]").val(currencyName);
+            $("input[name=currency_code]").val(currencyCode);
+            $("input[name=currency_symbol]").val(currencySymbol);
+
+            updateFeesAndPreview();
+        });
+
+        $("input[name=amount]").on("keyup change", function () {
+            updateFeesAndPreview();
+        });
+
+        $(".wallet-balance-update-btn").on("click", function () {
+            $('#user').val($("input[name=email]").val());
+            $('#montant').val($("input[name=amount]").val());
+
+            if ($("input[name=email]").val() && $("input[name=amount]").val()) {
+                openModalBySelector("#wallet-balance-update-modal");
+            }
+        });
+
+        $("#show_hide_password a").on('click', function (e) {
+            e.preventDefault();
+            const $input = $('#show_hide_password input');
+            const $icon = $('#show_hide_password i');
+            const type = $input.attr("type") === "text" ? "password" : "text";
+            $input.attr('type', type);
+            $icon.toggleClass("fa-eye fa-eye-slash");
+        });
+
+        updateFeesAndPreview();
+    });
+
+    function acceptVar() {
+        const selected = $("select[name=currency] :selected");
+        return {
+            currencyCode: selected.attr("code") || defualCurrency,
+            currencyRate: parseFloat(defualCurrencyRate),
+            currencyMinAmount: moneyInCharge.min_limit,
+            currencyMaxAmount: moneyInCharge.max_limit,
+            currencyFixedCharge: moneyInCharge.fixed_charge,
+            currencyPercentCharge: moneyInCharge.percent_charge,
+        };
+    }
+
+    function updateFeesAndPreview() {
+        updateLimitDisplay();
+        updateFeeDisplay();
+        updatePreview();
+    }
+
+    function updateLimitDisplay() {
+        const { currencyCode, currencyRate, currencyMinAmount, currencyMaxAmount } = acceptVar();
+
+        if ($.isNumeric(currencyMinAmount) && $.isNumeric(currencyMaxAmount)) {
+            const min = (currencyMinAmount / currencyRate).toFixed(2);
+            const max = (currencyMaxAmount / currencyRate).toFixed(2);
+            $('.limit-show').html(`{{ __('limit') }} ${min} ${currencyCode} - ${max} ${currencyCode}`);
+        } else {
+            $('.limit-show').html("--");
+        }
+    }
+
+    function calculateFees() {
+        const { currencyRate, currencyFixedCharge, currencyPercentCharge } = acceptVar();
+        let senderAmount = parseFloat($("input[name=amount]").val()) || 0;
+
+        const fixed = currencyFixedCharge * currencyRate;
+        const percent = (senderAmount * percent_charge * currencyRate) / 100;
+        const total = (fixed + percent).toFixed(2);
+
+        return { total, fixed, percent: currencyPercentCharge };
+    }
+
+    function updateFeeDisplay() {
+        const { currencyCode } = acceptVar();
+        const charges = calculateFees();
+        $(".fees-show").html(`{{ __('Transfer Fee') }} ${charges.fixed.toFixed(2)} ${currencyCode} + ${parseFloat(charges.percent).toFixed(2)}%`);
+    }
+
+    function updatePreview() {
+        const { currencyRate, currencyCode } = acceptVar();
+        const amount = parseFloat($("input[name=amount]").val()) || 0;
+        const charges = calculateFees();
+
+        $('.request-amount').text(`${amount} ${defualCurrency}`);
+        $('.fees').text(`${charges.total} ${currencyCode}`);
+
+        const recipientAmount = ((amount - charges.total) * currencyRate).toFixed(2);
+        $('.recipient-get').text(`${recipientAmount} ${currencyCode}`);
+
+        const totalPay = (amount * currencyRate).toFixed(2);
+        $('.payable-total').text(`${totalPay} ${currencyCode}`);
+    }
+
+    function openModalBySelector(selector, animation = "mfp-move-horizontal") {
+        $(selector).addClass("white-popup mfp-with-anim");
+        $.magnificPopup.open({
+            removalDelay: 500,
+            items: { src: $(selector), type: 'inline' },
+            callbacks: {
+                beforeOpen: function () {
+                    this.st.mainClass = animation;
+                },
+                elementParse: function () {
+                    $(selector).find(".modal-close").click(function () {
+                        $.magnificPopup.close();
+                    });
+                }
+            }
+        });
+        $.magnificPopup.instance._onFocusIn = function (e) {
+            if ($(e.target).hasClass('select2-search__field')) return true;
+            $.magnificPopup.proto._onFocusIn.call(this, e);
+        }
+    }
+</script>  --}}
 @endpush

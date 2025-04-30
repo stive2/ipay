@@ -25,14 +25,14 @@
                                 ])
                             </div>
                         </div>
-                        {{-- <div class="col-xl-12 col-lg-12 form-group">
+                        <div class="col-xl-12 col-lg-12 form-group">
                             @include('admin.components.form.switcher',[
                                 'label'         => 'Type*',
                                 'name'          => 'currency_type',
                                 'value'         => old('currency_type'),
                                 'options'       => ['FIAT' => 'FIAT','CRYPTO' => 'CRYPTO'],
                             ])
-                        </div> --}}
+                        </div>
                         <div class="col-xl-12 col-lg-12 form-group">
                             <label>{{ __("country") }}*</label>
                             <select name="currency_country" class="form--control select2-auto-tokenize country-select" data-old="{{ old('currency_country') }}">
@@ -60,20 +60,20 @@
                                 'value'         => old('currency_symbol'),
                             ])
                         </div>
-                        {{-- <div class="col-xl-12 col-lg-12 form-group">
+                        <div class="col-xl-12 col-lg-12 form-group">
                             <label>{{ __("Rate") }}*</label>
                             <div class="input-group">
                                 <span class="input-group-text append">1 {{ get_default_currency_code($default_currency) }} = </span>
                                 <input type="te" class="form--control" value="{{ old('currency_rate') }}" name="currency_rate">
                                 <span class="input-group-text selcted-currency-edit">{{ old('currency_code') }}</span>
                             </div>
-                        </div> --}}
-                        {{-- <div class="col-xl-12 col-lg-12 form-group">
+                        </div>
+                        <div class="col-xl-12 col-lg-12 form-group">
                             @include('admin.components.form.radio-button',[
                                 'label'         => 'Role*',
                                 'name'          => 'currency_role',
                                 'value'         => old('currency_role'),
-                                'options'       => ['Both' => 'both', 'Sender' => 'sender', 'Receiver' => 'receiver'],
+                                'options'       => ['Both' => 'both'], // , 'Sender' => 'sender', 'Receiver' => 'receiver'
                             ])
                         </div>
                         <div class="col-xl-12 col-lg-12 form-group">
@@ -83,7 +83,7 @@
                                 'value'         => old('currency_option'),
                                 'options'       => ['Optional' => 0,'Default' => 1],
                             ])
-                        </div> --}}
+                        </div>
 
                         <div class="col-xl-12 col-lg-12 form-group d-flex align-items-center justify-content-between mt-4">
                             <button type="button" class="btn btn--danger modal-close">{{ __("Cancel") }}</button>
@@ -113,9 +113,9 @@
                     editModal.find(".form--control").removeClass("is-invalid");
 
                     editModal.find("form").first().find("input[name=target]").val(oldData.code);
-                    editModal.find("input[name=currency_code]").val(oldData.code).prop("readonly",readOnly);
-                    editModal.find("input[name=currency_name]").val(oldData.name).prop("readonly",readOnly);
-                    editModal.find("input[name=currency_symbol]").val(oldData.symbol).prop("readonly",readOnly);
+                    editModal.find("input[name=currency_code]").val(oldData.code);//.prop("readonly",readOnly);
+                    editModal.find("input[name=currency_name]").val(oldData.name);//.prop("readonly",readOnly);
+                    editModal.find("input[name=currency_symbol]").val(oldData.symbol);//.prop("readonly",readOnly);
                     editModal.find("input[name=currency_rate]").val(oldData.rate);
                     editModal.find("input[name=currency_type]").val(oldData.type);
                     editModal.find("input[name=currency_flag]").attr("data-preview-name",oldData.flag);

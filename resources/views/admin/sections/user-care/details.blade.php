@@ -23,7 +23,26 @@
 <div class="dashboard-area">
     <div class="dashboard-item-area">
         <div class="row">
-            <div class="col-xxxl-4 col-xxl-4 col-xl-4 col-lg-6 col-md-6 col-sm-12 mb-15">
+            @foreach ($balances ?? [] as $item)
+                <div class="col-xxxl-4 col-xxl-4 col-xl-4 col-lg-6 col-md-6 col-sm-12 mb-15">
+                    <div class="dashbord-item">
+                        <div class="dashboard-content">
+                            <div class="left">
+                                <h6 class="title">{{ __("Current Balance") }} {{ $item->currency->name }}</h6>
+                                <div class="user-info">
+                                    <h2 class="user-count">{{ get_amount($item->balance ?? 0, $item->currency->code) }}</h2>
+                                </div>
+                            </div>
+                            <div class="right">
+                                <div class="dashboard-icon">
+                                    <i class="las la-wallet"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+            {{--  <div class="col-xxxl-4 col-xxl-4 col-xl-4 col-lg-6 col-md-6 col-sm-12 mb-15">
                 <div class="dashbord-item">
                     <div class="dashboard-content">
                         <div class="left">
@@ -91,7 +110,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>  --}}
         </div>
     </div>
 </div>

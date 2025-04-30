@@ -57,9 +57,8 @@ class AgentCareController extends Controller
     {
         $page_title = __("Active Agent");
         // $agents = Agent::active()->orderBy('id', 'desc')->paginate(12);
-        // Joindre la table `agent_profits` et récupérer le champ `total_charge`
-        $agents = Agent::with('wallet')->active()
-                        ->leftJoin('agent_profits', 'agents.id', '=', 'agent_profits.agent_id')
+        // Joindre la table `agent_profits` et récupérer le champ `total_charge` with('wallets')->active()
+        $agents = Agent::leftJoin('agent_profits', 'agents.id', '=', 'agent_profits.agent_id')
                         ->select('agents.*',
                             DB::raw('SUM(CASE WHEN agent_profits.paid = 0 THEN agent_profits.total_charge ELSE 0 END) as commissions')
                         ) // Calcul de la somme des `total_charge` où le statut est 0
@@ -201,29 +200,35 @@ class AgentCareController extends Controller
         $page_title = __("Agent Details");
         $user = Agent::where('username', $username)->first();
         if (!$user) return back()->with(['error' => ['Opps! Agent not exists']]);
-        $balance = AgentWallet::where('agent_id', $user->id)->first()->balance ?? 0;
-        $money_in_amount = Transaction::where('agent_id', $user->id)->where('type', PaymentGatewayConst::MONEYIN)->where('attribute', PaymentGatewayConst::SEND)->where('status', 1)->sum('request_amount');
-        $add_money_amount = Transaction::where('agent_id', $user->id)->where('type', PaymentGatewayConst::TYPEADDMONEY)->where('status', 1)->sum('request_amount');
-        $money_out_amount = Transaction::where('agent_id', $user->id)->where('type', PaymentGatewayConst::TYPEMONEYOUT)->where('status', 1)->sum('request_amount');
-        $total_transaction = Transaction::where('agent_id', $user->id)->where('status', 1)->sum('request_amount');
-        $agent_profits = AgentProfit::where('agent_id', $user->id)->where('paid', '0')->sum('total_charge');
+        /* $balances = AgentWallet::join('currencies', 'currencies.id', '=', 'agent_wallets.currency_id')
+            ->where('agent_wallets.agent_id', $user->id)
+            ->select('agent_wallets.*', 'currencies.code')
+            ->get(); ->balance ?? 0;*/
+        // $balances = AgentWallet::where('agent_id', $user->id)->get();
+        $balances = AgentWallet::where('agent_id', $user->id)->with('currency')->get();
+        // $money_in_amount = Transaction::where('agent_id', $user->id)->where('type', PaymentGatewayConst::MONEYIN)->where('attribute', PaymentGatewayConst::SEND)->where('status', 1)->sum('request_amount');
+        // $add_money_amount = Transaction::where('agent_id', $user->id)->where('type', PaymentGatewayConst::TYPEADDMONEY)->where('status', 1)->sum('request_amount');
+        // $money_out_amount = Transaction::where('agent_id', $user->id)->where('type', PaymentGatewayConst::TYPEMONEYOUT)->where('status', 1)->sum('request_amount');
+        // $total_transaction = Transaction::where('agent_id', $user->id)->where('status', 1)->sum('request_amount');
+        // $agent_profits = AgentProfit::where('agent_id', $user->id)->where('paid', '0')->sum('total_charge');
         $data = [
-            'balance'              => $balance,
-            'total_transaction'    => $total_transaction,
+            'balances'              => $balances,
+            /* 'total_transaction'    => $total_transaction,
             'add_money_amount'    => $add_money_amount,
             'money_out_amount'    => $money_out_amount,
             'agent_profits'    => $agent_profits,
-            'money_in_amount'    => $money_in_amount,
+            'money_in_amount'    => $money_in_amount, */
         ];
         $basicSetting = BasicSettings::first();
-        if ($basicSetting->min_commission_payable > $data['agent_profits']) {
+        /* if ($basicSetting->min_commission_payable > $data['agent_profits']) {
             $data['minCommission'] = 'text--danger';
             $data['payable'] = 0;
-        } else $data['payable'] = 1;
+        } else */ $data['payable'] = 1;
         return view('admin.sections.agent-care.details', compact(
             'page_title',
             'user',
-            'data'
+            'data',
+            'balances',
         ));
     }
 

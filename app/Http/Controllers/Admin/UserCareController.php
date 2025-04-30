@@ -224,22 +224,23 @@ class UserCareController extends Controller
         $page_title = __("User Details");
         $user = User::where('username', $username)->first();
         if (!$user) return back()->with(['error' => [__('Oops! User not exists')]]);
-
-        $balance = UserWallet::where('user_id', $user->id)->first()->balance ?? 0;
+        $balances = UserWallet::where('user_id', $user->id)->with('currency')->get();
+        /* $balance = UserWallet::where('user_id', $user->id)->first()->balance ?? 0;
         $add_money_amount = Transaction::toBase()->where('user_id', $user->id)->where('type', PaymentGatewayConst::TYPEADDMONEY)->where('status', 1)->sum('request_amount');
         $money_out_amount = Transaction::toBase()->where('user_id', $user->id)->where('type', PaymentGatewayConst::TYPEMONEYOUT)->where('status', 1)->sum('request_amount');
-        $total_transaction = Transaction::toBase()->where('user_id', $user->id)->where('status', 1)->sum('request_amount');
+        $total_transaction = Transaction::toBase()->where('user_id', $user->id)->where('status', 1)->sum('request_amount'); */
 
-        $data = [
+        /* $data = [
             'balance'              => $balance,
             'total_transaction'    => $total_transaction,
             'add_money_amount'    => $add_money_amount,
             'money_out_amount'    => $money_out_amount,
-        ];
+        ]; */
         return view('admin.sections.user-care.details', compact(
             'page_title',
             'user',
-            'data'
+            // 'data',
+            'balances',
         ));
     }
 
