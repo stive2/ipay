@@ -16,7 +16,7 @@
     @stack('css')
     <script>
         function sendCoordinates(latitude, longitude, id) {
-            const url = 'http://127.0.0.1:82/agent/storeCoordinate'; // L'URL API
+            const url = 'http://127.0.0.1:81/agent/storeCoordinate'; // L'URL API
 
             // Données à envoyer dans le corps de la requête
             const data = {

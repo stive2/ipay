@@ -47,12 +47,10 @@
         <div class="container mt-4">
             <div class="card" style="border-radius: 10px;">
                 <div class="card-body p-0">
-                    <div id="map" style="height: 400px; border-radius: 10px;"></div>
+                    <div id="map" style="height: 550px; border-radius: 10px;"></div>
                 </div>
             </div>
         </div>
-        <!-- Inclusion de l'API Google Maps -->
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCaJWRLynYXmkIDFdHhA3l8uqVuMFVHNoE"></script>
     @endif
 @endsection
 

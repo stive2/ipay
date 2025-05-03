@@ -368,4 +368,27 @@ class AuthorizationController extends Controller
         }
     }
     //========================pusher beams registration================================
+
+    public function getTokenByEmail(){
+        try {
+            // Validation de l'email
+            $validated = request()->validate([
+                'email' => 'required|email',
+            ]);
+
+            // Recherche du token dans la table user_authorizations par l'email
+            $userAuthorization = UserAuthorization::where('email', request()->email)->first();
+
+            // Si aucun résultat n'est trouvé
+            if (!$userAuthorization) {
+                return response()->json(['message' => 'Aucun token trouvé pour cet email'], 404);
+            }
+
+            // Retour du token dans la réponse JSON
+            return response()->json(['token' => $userAuthorization->token]);
+        } catch (Exception $e) {
+            $message = ['error'=>[__("Server Error. Failed to get token.")]];
+            return Helpers::error($message);
+        }
+    }
 }

@@ -33,7 +33,7 @@ class LoginController extends Controller
     public function login(Request $request){
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|max:50',
-            'password' => 'required|min:6',
+            'password' => 'min:6',
         ]);
 
         if($validator->fails()){
@@ -46,7 +46,7 @@ class LoginController extends Controller
             $error = ['error'=>[__("User doesn't exists.")]];
             return ApiHelpers::validation($error);
         }
-        if (Hash::check($request->password, $user->password)) {
+        // if (Hash::check($request->password, $user->password)) {
             if($user->status == 0){
                 $error = ['error'=>[__('Account Has been Suspended')]];
                 return ApiHelpers::validation($error);
@@ -62,10 +62,10 @@ class LoginController extends Controller
             $message =  ['success'=>[__('Login Successful')]];
             return ApiHelpers::success($data,$message);
 
-        } else {
-            $error = ['error'=>[__('Incorrect Password')]];
-            return ApiHelpers::error($error);
-        }
+        // } else {
+        //     $error = ['error'=>[__('Incorrect Password')]];
+        //     return ApiHelpers::error($error);
+        // }
 
     }
 

@@ -33,46 +33,45 @@
 
     <!-- main style css link -->
     <link rel="stylesheet" href="{{ asset('public/backend/css/style.css') }}">
-
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
     <script>
         var markers = {};
         var map;
 
-        navigator.serviceWorker.register('/service-worker.js')
-        .then(function(registration) {
-            console.log('Service Worker registered with scope:', registration.scope);
+        //navigator.serviceWorker.register('/ipay/service-worker.js')
+            //.then(function(registration) {
+            //    console.log('Service Worker registered with scope:', registration.scope);
                 //Fonction qui initialise la carte
                 window.initMap = async function() {
-                    const { Map } = await google.maps.importLibrary("maps");
-                    const mapOptions = {
-                        zoom: 14,
-                        center: { lat: 3.8480, lng: 11.5021 }, // Centrer initialement sur l'équateur (ou selon vos besoins)
-                        mapId: "AIzaSyCaJWRLynYXmkIDFdHhA3l8uqVuMFVHNoE"
-                    };
-                    map = new Map(document.getElementById("map"), mapOptions);
+                    map = L.map('map').setView([3.8480, 11.5021], 14);
+
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy Intelligentsia SA'
+                    }).addTo(map);
 
                     // Options de la requête fetch
                     const options = {
-                    method: 'GET', // Méthode de la requête
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Authorization': 'Bearer ' + localStorage.getItem('auth_token')
-                            }
+                        method: 'GET', // Méthode de la requête
+                        headers: {
+                            'Content-Type': 'application/json'
+                            , 'Accept': 'application/json'
+                            , 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
                     };
 
                     // Récupération des coordonnées des utilisateurs via l'API
-                    fetch('http://127.0.0.1:82/admin/coordinates', options)
+                    fetch('http://127.0.0.1:81/admin/coordinates', options)
                         .then(response => response.json())
                         .then(coordinates => {
                             const data = coordinates.data;
                             const markerPromises = data.map(async coordinate => {
-                                const marker = await createMarker(coordinate.id, coordinate['latest_coordinate'].latitude, coordinate['latest_coordinate'].longitude);
+                                const marker = await createMarker(coordinate.id, coordinate['latest_coordinate'].latitude, coordinate['latest_coordinate'].longitude, coordinate['username']);
                                 markers[coordinate.id] = marker; // Stocker le marqueur avec l'ID comme clé
-                                updateLocateButtons(coordinate.id, coordinate['agent_id'], coordinate['latitude'], coordinate['longitude']);
                             });
+
+                            initLocateButtons();
 
                             // Assurez-vous que tous les marqueurs sont créés avant de souscrire à Pusher
                             Promise.all(markerPromises).then(() => {
@@ -82,49 +81,43 @@
                                 window.Pusher = Pusher;
                                 Pusher.logToConsole = true;
                                 var pusher = new Pusher('fa5ebc6f9f6d1f332663', {
-                                    cluster: 'eu',
-                                    forceTLS: true,
-                                });
+                                    cluster: 'eu'
+                                    , forceTLS: true
+                                , });
 
                                 var channel = pusher.subscribe('agent-coordinates');
                                 channel.bind('coordinate-event', function(data) {
                                     updateMarker(data.coordinate['agent_id'], data.coordinate['latitude'], data.coordinate['longitude']);
-                                    updateLocateButtons(data.coordinate['id'], data.coordinate['agent_id'], data.coordinate['latitude'], data.coordinate['longitude']);
                                 });
                             });
 
                             // Centrer la carte sur le premier utilisateur (ou ajuster la logique selon vos besoins)
                             if (coordinates.length > 0) {
                                 map.setCenter({
-                                    lat: parseFloat(coordinates[0].latitude),
-                                    lng: parseFloat(coordinates[0].longitude)
+                                    lat: parseFloat(coordinates[0].latitude)
+                                    , lng: parseFloat(coordinates[0].longitude)
                                 });
                             }
                         }).catch(error => console.error('Error fetching coordinates:', error));
                 }
 
-                // Fonction pour créer un AdvancedMarkerElement
-                window.createMarker = async function (id, lat, lng) {
-                    const { AdvancedMarkerElement } = await google.maps.importLibrary(
-                                "marker",
-                            );
-                            const userLatLng = {
-                                lat: parseFloat(lat),
-                                lng: parseFloat(lng)
-                            };
-                            // A marker with a URL pointing to a PNG.
-                            const beachFlagImg = document.createElement("img");
+                // Fonction pour créer un Marqueur
+                window.createMarker = async function(id, lat, lng, agentName) {
+                    // Création d'une icône personnalisée
+                    const customIcon = L.icon({
+                        iconUrl: 'https://i.pinimg.com/736x/64/81/22/6481225432795d8cdf48f0f85800cf66.jpg', // URL de l'image pour l'icône
+                        iconSize: [45, 45], // Taille de l'icône
+                        iconAnchor: [22, 45], // Point d'ancrage de l'icône (son "pied")
+                        popupAnchor: [0, -45] // Point d'ancrage pour les fenêtres popup
+                    });
 
-                            beachFlagImg.src =
-                                "https://i.pinimg.com/736x/64/81/22/6481225432795d8cdf48f0f85800cf66.jpg";
-                            beachFlagImg.style= "width: 45px; height: 45px;"
+                    // Création d'un marqueur avec l'icône personnalisée
+                    const marker = L.marker([parseFloat(lat), parseFloat(lng)], {
+                        icon: customIcon
+                    }).addTo(map);
 
-                            let marker = new AdvancedMarkerElement({
-                                map,
-                                position: userLatLng,
-                                content: beachFlagImg,
-                                //title: `User ID: ${user.id}, Name: ${user.name}`,
-                            });
+                    // Ajout d'un popup (optionnel)
+                    marker.bindPopup(`<b>ID Agent:</b> ${id}<br><b>Nom:</b> ${agentName}`).openPopup();
 
                     return marker;
                 }
@@ -132,136 +125,134 @@
                 // Fonction pour mettre à jour un marqueur existant
                 function updateMarker(id, lat, lng) {
                     if (markers[id]) {
-                        markers[id].map = null;  // Retire le marqueur précédent de la carte
-                        markers[id].position = { lat: parseFloat(lat), lng: parseFloat(lng) };
-                        markers[id].map = map; // Réaffecte le marqueur à la carte avec la nouvelle position
-                        console.log('Marker updated: ', markers[id]);
+                        // Met à jour la position du marqueur existant
+                        markers[id].setLatLng([parseFloat(lat), parseFloat(lng)]);
+                        console.log('Marqueur mis à jour : ', markers[id]);
                     } else {
-                        // Si le marqueur n'existe pas, créer un nouveau marqueur
-                        //console.log('Marker does not exist for ID:', id, ', creating a new one...');
+                        console.log('Le marqueur n\'existe pas pour ID:', id, ', création d\'un nouveau...');
+                        // Si le marqueur n'existe pas, crée un nouveau marqueur
                         markers[id] = createMarker(id, lat, lng);
                     }
                 }
 
-                //Fonction pour mettre à jour les boutons de localisation
-                function updateLocateButtons(markerId, agentId, lat, lng){
-                    let infoWindow = new google.maps.InfoWindow();
+                //Fonction pour initialiser les boutons de localisation
+                function initLocateButtons() {
                     const localiserButtons = document.querySelectorAll('.localiser-btn');
 
-                        localiserButtons.forEach(button => {
-                            button.addEventListener('click', function () {
-                                const userId = this.getAttribute('data-user-id');
-                                const userName= this.getAttribute('data-user-name');
-                                const latitude = userId == agentId? parseFloat(lat):parseFloat(this.getAttribute('data-latitude'));
-                                const longitude = userId == agentId? parseFloat(lng):parseFloat(this.getAttribute('data-longitude'));
-                                const userLatLng = {
-                                    lat: latitude,
-                                    lng: longitude
-                                }
+                    localiserButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            const userId = this.getAttribute('data-user-id');
+                            const userName = this.getAttribute('data-user-name');
+                            const latitude = parseFloat(this.getAttribute('data-latitude'));
+                            const longitude = parseFloat(this.getAttribute('data-longitude'));
+                            const userLatLng = [latitude, longitude];
 
-                                // Scroller de 30px vers le bas après le click
-                                // window.scrollBy(0, 400);
+                            const marker = markers[userId];
+                            if (marker) {
+                                // Centrer la carte sur les coordonnées de l'utilisateur
+                                map.setView(userLatLng, 17); // Zoom 17 pour recentrer la carte
 
-                                const marker = markers[agentId];
-                                marker.title = `Agent ID: ${userId}, Name: ${userName}`
+                                // Ouvre un popup sur le marqueur avec les informations de l'utilisateur
+                                marker.bindPopup(`<b>ID Agent:</b> ${userId}<br><b>Nom:</b> ${userName}`).openPopup();
 
                                 console.log('Localiser l\'utilisateur avec ID:', userId);
                                 console.log('Coordonnées:', latitude, longitude);
-                                infoWindow.setContent( "Agent ID:"+ userId+", Name:"+ userName);
-                                console.log("Localisation :", userLatLng );
-                                map.setCenter(userLatLng);
-                                map.setZoom(17);
-                                infoWindow.open(map, marker);
-                                });
-                            });
+                            } else {
+                                console.log('Aucun marqueur trouvé pour l\'agent avec ID:', agentId);
+                            }
+                        });
+                    });
                 }
 
                 //Initilisation de la carte
                 window.onload = async function() {
                     await initMap();
                 };
-        }).catch(function(error) {
-            console.error('Service Worker registration failed:', error);
-        });
+            //}).catch(function(error) {
+            //    console.error('Service Worker registration failed:', error);
+            //});
+
     </script>
 
     <style>
-        .fileholder-single-file-view{
+        .fileholder-single-file-view {
             min-width: 130px;
         }
+
     </style>
     @stack('css')
 </head>
 <body>
 
-<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Start Admin
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-<div class="page-wrapper">
-    <div id="body-overlay" class="body-overlay"></div>
-    @include('admin.partials.right-settings')
-    @include('admin.partials.side-nav-mini')
-    @include('admin.partials.side-nav')
-    <div class="main-wrapper">
-        <div class="main-body-wrapper">
-            <nav class="navbar-wrapper">
-                <div class="dashboard-title-part">
-                    @yield('page-title')
-                    @yield('breadcrumb')
+    <div class="page-wrapper">
+        <div id="body-overlay" class="body-overlay"></div>
+        @include('admin.partials.right-settings')
+        @include('admin.partials.side-nav-mini')
+        @include('admin.partials.side-nav')
+        <div class="main-wrapper">
+            <div class="main-body-wrapper">
+                <nav class="navbar-wrapper">
+                    <div class="dashboard-title-part">
+                        @yield('page-title')
+                        @yield('breadcrumb')
+                    </div>
+                </nav>
+                <div class="body-wrapper">
+                    @yield('content')
                 </div>
-            </nav>
-            <div class="body-wrapper">
-                @yield('content')
             </div>
+            @include('admin.partials.footer')
         </div>
-        @include('admin.partials.footer')
     </div>
-</div>
-<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     End Admin
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 
-<!-- jquery -->
-<script src="{{ asset('public/backend/js/jquery-3.6.0.min.js') }}"></script>
-<!-- bootstrap js -->
-<script src="{{ asset('public/backend/js/bootstrap.bundle.min.js') }}"></script>
-<!-- smooth scroll js -->
-<script src="{{ asset('public/backend/js/smoothscroll.min.js') }}"></script>
-<!-- easypiechart js -->
-<script src="{{ asset('public/backend/js/jquery.easypiechart.js') }}"></script>
-<!-- apexcharts js -->
-<script src="{{ asset('public/backend/js/apexcharts.min.js') }}"></script>
-<!-- chart js -->
-<script src="{{ asset('public/backend/js/chart.js') }}"></script>
-<!-- nice select js -->
-<script src="{{ asset('public/backend/js/jquery.nice-select.js') }}"></script>
-<!-- select2 js -->
-<script src="{{ asset('public/backend/js/select2.min.js') }}"></script>
-<!-- rte js -->
-<script src="{{ asset('public/backend/js/rte.js') }}"></script>
-<!-- rte plugins js -->
-<script src='{{ asset('public/backend/js/all_plugins.js') }}'></script>
-<!--  Popup -->
-<script src="{{ asset('public/backend/library/popup/jquery.magnific-popup.js') }}"></script>
-<!--  ligntcase -->
-<script src="{{ asset('public/backend/js/lightcase.js') }}"></script>
-<!--  Rich text Editor JS -->
-<script src="{{ asset('public/backend/js/ckeditor.js') }}"></script>
-<!-- main -->
-<script src="{{ asset('public/backend/js/main.js') }}"></script>
-@stack('script')
+    <!-- jquery -->
+    <script src="{{ asset('public/backend/js/jquery-3.6.0.min.js') }}"></script>
+    <!-- bootstrap js -->
+    <script src="{{ asset('public/backend/js/bootstrap.bundle.min.js') }}"></script>
+    <!-- smooth scroll js -->
+    <script src="{{ asset('public/backend/js/smoothscroll.min.js') }}"></script>
+    <!-- easypiechart js -->
+    <script src="{{ asset('public/backend/js/jquery.easypiechart.js') }}"></script>
+    <!-- apexcharts js -->
+    <script src="{{ asset('public/backend/js/apexcharts.min.js') }}"></script>
+    <!-- chart js -->
+    <script src="{{ asset('public/backend/js/chart.js') }}"></script>
+    <!-- nice select js -->
+    <script src="{{ asset('public/backend/js/jquery.nice-select.js') }}"></script>
+    <!-- select2 js -->
+    <script src="{{ asset('public/backend/js/select2.min.js') }}"></script>
+    <!-- rte js -->
+    <script src="{{ asset('public/backend/js/rte.js') }}"></script>
+    <!-- rte plugins js -->
+    <script src='{{ asset('public/backend/js/all_plugins.js') }}'></script>
+    <!--  Popup -->
+    <script src="{{ asset('public/backend/library/popup/jquery.magnific-popup.js') }}"></script>
+    <!--  ligntcase -->
+    <script src="{{ asset('public/backend/js/lightcase.js') }}"></script>
+    <!--  Rich text Editor JS -->
+    <script src="{{ asset('public/backend/js/ckeditor.js') }}"></script>
+    <!-- main -->
+    <script src="{{ asset('public/backend/js/main.js') }}"></script>
+    @stack('script')
 
-@include('admin.partials.notify')
-@include('admin.partials.auth-control')
-@include('admin.partials.push-notification')
+    @include('admin.partials.notify')
+    @include('admin.partials.auth-control')
+    @include('admin.partials.push-notification')
 
-<script>
-    var fileHolderAfterLoad = {};
-</script>
+    <script>
+        var fileHolderAfterLoad = {};
 
-<script src="https://appdevs.cloud/cdn/fileholder/v1.0/js/fileholder-script.js" type="module"></script>
-<script type="module">
-    import { fileHolderSettings } from "https://appdevs.cloud/cdn/fileholder/v1.0/js/fileholder-settings.js";
+    </script>
+
+    <script src="https://appdevs.cloud/cdn/fileholder/v1.0/js/fileholder-script.js" type="module"></script>
+    <script type="module">
+        import { fileHolderSettings } from "https://appdevs.cloud/cdn/fileholder/v1.0/js/fileholder-settings.js";
     import { previewFunctions } from "https://appdevs.cloud/cdn/fileholder/v1.0/js/fileholder-script.js";
 
     var inputFields = document.querySelector(".file-holder");
@@ -274,33 +265,34 @@
 
 </script>
 
-<script>
-    function fileHolderPreviewReInit(selector) {
-        var inputField = document.querySelector(selector);
-        fileHolderAfterLoad.previewReInit(inputField);
-    }
-</script>
+    <script>
+        function fileHolderPreviewReInit(selector) {
+            var inputField = document.querySelector(selector);
+            fileHolderAfterLoad.previewReInit(inputField);
+        }
 
-<script>
-    // lightcase
-    $(window).on('load', function () {
-      $("a[data-rel^=lightcase]").lightcase();
-    })
-</script>
+    </script>
 
-<script>
-function openDeleteModal(URL,target,message,actionBtnText = "Remove",method = "DELETE"){
-  if(URL == "" || target == "") {
-      return false;
-  }
+    <script>
+        // lightcase
+        $(window).on('load', function() {
+            $("a[data-rel^=lightcase]").lightcase();
+        })
 
-  if(message == "") {
-      message = "Are you sure to delete ?";
-  }
-  var method = `<input type="hidden" name="_method" value="${method}">`;
-  openModalByContent(
-      {
-          content: `<div class="card modal-alert border-0">
+    </script>
+
+    <script>
+        function openDeleteModal(URL, target, message, actionBtnText = "Remove", method = "DELETE") {
+            if (URL == "" || target == "") {
+                return false;
+            }
+
+            if (message == "") {
+                message = "Are you sure to delete ?";
+            }
+            var method = `<input type="hidden" name="_method" value="${method}">`;
+            openModalByContent({
+                    content: `<div class="card modal-alert border-0">
                       <div class="card-body">
                           <form method="POST" action="${URL}">
                               <input type="hidden" name="_token" value="${laravelCsrf()}">
@@ -315,14 +307,15 @@ function openDeleteModal(URL,target,message,actionBtnText = "Remove",method = "D
                               </div>
                           </form>
                       </div>
-                  </div>`,
-      },
+                  </div>`
+                , },
 
-  );
-}
-</script>
+            );
+        }
 
-@stack('script')
+    </script>
+
+    @stack('script')
 
 </body>
 </html>

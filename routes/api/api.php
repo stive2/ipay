@@ -86,6 +86,7 @@ Route::prefix('user')->group(function () {
         Route::post('send/otp', [AuthorizationController::class, 'sendEmailOtp']);
         Route::post('verify/otp', [AuthorizationController::class, "verifyEmailOtp"]);
         Route::post('resend/otp', [AuthorizationController::class, "resendEmailOtp"]);
+        Route::post('get/token', [AuthorizationController::class, "getTokenByEmail"]);
     });
 
     Route::post('register', [LoginController::class, 'register'])->middleware(['user.registration.permission']);

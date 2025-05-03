@@ -136,28 +136,31 @@ class UtilityHelper{
     /**
      * get all billers information
      */
-    public function getBillers():array
+    public function getBillers(): array
     {
-        // $biller_cache_key = $this->resolveCacheKey(self::BILLERS_CACHE_KEY);
-        // if(cache()->driver('file')->get($biller_cache_key)) return cache()->driver('file')->get($biller_cache_key);
+        if (empty($this->config['request_url'])) {
+            // Si l'URL de base n'est pas configurée, retourner un tableau vide
+            return [];
+        }
 
-        if(!$this->access_token) $this->accessToken();
+        if (!$this->access_token) {
+            $this->accessToken();
+        }
 
         $access_token = $this->access_token;
-
         $base_url = $this->config['request_url'];
-
         $request_endpoint = $base_url . "/billers";
+
         $response = Http::withHeaders([
             'Authorization' => "Bearer " . $access_token,
             "Accept: application/com.reloadly.utilities-v1+json",
-        ])->get($request_endpoint)->throw(function(Response $response, RequestException $exception) {
+        ])->get($request_endpoint)->throw(function (Response $response, RequestException $exception) {
             throw new Exception($exception->getMessage());
         })->json();
 
-        if(!is_array($response)) throw new Exception(__("Something went wrong! Please try again."));
-
-        // cache()->driver('file')->put($biller_cache_key, $response, 43200);
+        if (!is_array($response)) {
+            throw new Exception(__("Something went wrong! Please try again."));
+        }
 
         return $response;
     }

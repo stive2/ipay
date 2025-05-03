@@ -55,13 +55,13 @@
         </div>
     </div>
     @foreach ($transaction_charges as $item)
-        @if($item->status == 1)
+        {{-- @if($item->status == 1) --}}
             @include('admin.components.trx-settings-charge-block',[
                 'route'         => setRoute('admin.trx.settings.charges.update'),
                 'title'         => $item->title,
                 'data'          => $item,
             ])
-        @endif
+        {{-- @endif --}}
     @endforeach
 @endsection
 

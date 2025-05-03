@@ -155,8 +155,8 @@ class BillPayMethodController extends Controller
         $validator = Validator::make($request->all(), [
             'client_id'                 => 'required|string',
             'secret_key'                => 'required|string',
-            'production_base_url'       => 'required|url',
-            'sandbox_base_url'          => 'required|url',
+            // 'production_base_url'       => 'required|url',
+            // 'sandbox_base_url'          => 'required|url',
             'env'                       => 'required|string',
         ]);
         if($validator->fails()) {

@@ -83,7 +83,7 @@ class MobileTopupController extends Controller
             'operator_id' => 'required',
             'phone_code' => 'required',
             'country_code' => 'required',
-            'mobile_number' => 'required|min:10|max:15',
+            'mobile_number' => 'required|min:9|max:15',
             'amount' => 'required|numeric|gt:0',
         ])->validate();
 
@@ -286,7 +286,7 @@ class MobileTopupController extends Controller
         $validated = Validator::make($request->all(),[
             'topup_type' => 'required|exists:topup_categories,id',
             'mobile_code' => 'required',
-            'mobile_number' => 'required|min:10|max:15',
+            'mobile_number' => 'required|min:9|max:15',
             'amount' => 'required|numeric|gt:0',
         ])->validate();
 

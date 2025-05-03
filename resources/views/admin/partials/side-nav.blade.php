@@ -67,7 +67,7 @@
                     ]
                 ])
                 {{-- manage Bill Pay & Mobile top Up Methods  --}}
-                {{--  @include('admin.components.side-nav.link-group',[
+                @include('admin.components.side-nav.link-group',[
                     'group_links'       => [
                         'dropdown'      => [
                             [
@@ -102,7 +102,7 @@
                         ],
 
                     ]
-                ])  --}}
+                ])
 
 
                 {{-- Section Transaction & Logs --}}
@@ -110,7 +110,7 @@
                     'group_title'       => __("TRANSACTIONS & LOGS"),
                     'group_links'       => [
                         'dropdown'      => [
-                            {{--  [
+                            [
                                 'title'     => __("Add Money Logs"),
                                 'icon'      => "menu-icon las la-calculator",
                                 'links'     => [
@@ -131,7 +131,7 @@
                                         'route'     => "admin.add.money.index",
                                     ]
                                 ],
-                            ],  --}}
+                            ],
                             [
                                 'title'             => __("withdraw Log"),
                                 'icon'              => "menu-icon las la-sign-out-alt",
@@ -620,7 +620,7 @@
                 ])
 
 
-                {{--  @if (admin_permission_by_name("admin.setup.sections.section"))
+                 @if (admin_permission_by_name("admin.setup.sections.section"))
                     <li class="sidebar-menu-header">{{ __("SETUP WEB CONTENT") }}</li>
                     @php
                         $current_url = URL::current();
@@ -756,8 +756,8 @@
                             </li>
                         </ul>
                     </li>
-                @endif  --}}
-                {{--  @include('admin.components.side-nav.link',[
+                @endif
+                @include('admin.components.side-nav.link',[
                     'route'     => 'admin.setup.pages.index',
                     'title'     => __("Setup Pages"),
                     'icon'      => "menu-icon las la-file-alt",
@@ -773,9 +773,9 @@
                     'route'     => 'admin.extensions.index',
                     'title'     => __("Extensions"),
                     'icon'      => "menu-icon las la-puzzle-piece",
-                ])  --}}
+                ])
 
-                {{--  @if (admin_permission_by_name("admin.payment.gateway.view"))
+               @if (admin_permission_by_name("admin.payment.gateway.view"))
                     <li class="sidebar-menu-header">{{ __("PAYMENT METHODS") }}</li>
                     @php
                         $payment_add_money_childs  = [
@@ -826,7 +826,7 @@
                             </li>
                         </ul>
                     </li>
-                @endif  --}}
+                @endif
 
                 {{-- Notifications --}}
                 {{--  @include('admin.components.side-nav.link-group',[
