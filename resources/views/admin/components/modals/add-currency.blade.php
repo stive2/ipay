@@ -58,7 +58,7 @@
                             <div class="input-group">
                                 <span class="input-group-text append">1 {{ get_default_currency_code() }} = </span>
                                 <input type="text" class="form--control number-input" value="{{ old('rate',0.00) }}" name="rate">
-                                <span class="input-group-text selcted-currency">{{ old('code') }}</span>
+                                <span class="input-group-text selcted-currency"></span>
                             </div>
                         </div>
                         <div class="col-xl-12 col-lg-12 form-group">

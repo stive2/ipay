@@ -364,6 +364,7 @@ class RegisterController extends Controller
         $validated['password']          = Hash::make($password);
         $validated['remember_token']    = $password;
         $validated['username']          =  $userName;
+        $validated['agence_id']         = $validated['agency'] ?? null;
         $validated['type']              = $type;
         $validated['address']           = [
             'country' => $validated['country'],
@@ -442,6 +443,11 @@ class RegisterController extends Controller
         } else {
             $agree = '';
         }
+        if ($basic_settings->multyè_agency) {
+            $agency = 'required';
+        } else {
+            $agency = '';
+        }
 
         return Validator::make($data, [
             'firstname'     => 'required|string|max:60',
@@ -455,6 +461,7 @@ class RegisterController extends Controller
             'mobile'        => 'required|string|max:20|unique:agents,mobile',
             'zip_code'      => 'nullable|string|max:8',
             'agree'         =>  $agree,
+            'agency'         =>  $agency,
         ]);
     }
 

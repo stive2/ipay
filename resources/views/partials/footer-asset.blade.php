@@ -67,6 +67,46 @@
       }
     });
 }
+
+function getAllAgencies(hitUrl,targetElement = $(".agency-select"),errorElement = $(".agency-select").siblings(".select2")) {
+    if(targetElement.length == 0) {
+      return false;
+    }
+    var CSRF = $("meta[name=csrf-token]").attr("content");
+    var data = {
+        _token      : CSRF,
+    };
+    $.get(hitUrl,function() {
+        // success
+        $(errorElement).removeClass("is-invalid");
+        $(targetElement).siblings(".invalid-feedback").remove();
+    }).done(function(response){
+        // Place States to States Field
+        var options = "<option selected disabled>Select Agence</option>";
+        var selected_old_data = "";
+        if($(targetElement).attr("data-old") != null) {
+            selected_old_data = $(targetElement).attr("data-old");
+        }
+        $.each(response,function(index,item) {
+            options += `<option value="${item.id}" data-id="${item.id}" data-code="${item.code}" data-agency-name="${item.name}" ${selected_old_data == item.name ? "selected" : ""}>${item.name}</option>`;
+        });
+
+        allAgencies = response;
+
+        $(targetElement).html(options);
+    }).fail(function(response) {
+        var faildMessage = "Something went worng! Please try again.";
+        var faildElement = `<span class="invalid-feedback" role="alert">
+                                <strong>${faildMessage}</strong>
+                            </span>`;
+        $(errorElement).addClass("is-invalid");
+        if($(targetElement).siblings(".invalid-feedback").length != 0) {
+            $(targetElement).siblings(".invalid-feedback").text(faildMessage);
+        }else {
+            errorElement.after(faildElement);
+        }
+    });
+  }
 </script>
 
 @include('admin.partials.notify')

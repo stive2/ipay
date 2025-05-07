@@ -593,6 +593,54 @@ function getAllCountries(hitUrl,targetElement = $(".country-select"),errorElemen
 }
 // getAllCountries();
 
+/**
+ * Function For Get All Agency list by AJAX Request
+ * @param {HTML DOM} targetElement
+ * @param {Error Place Element} errorElement
+ * @returns
+ */
+var allAgencies = "";
+function getAllAgencies(hitUrl,targetElement = $(".agency-select"),errorElement = $(".agency-select").siblings(".select2")) {
+  if(targetElement.length == 0) {
+    return false;
+  }
+  var CSRF = $("meta[name=csrf-token]").attr("content");
+  var data = {
+      _token      : CSRF,
+  };
+  $.get(hitUrl,function() {
+      // success
+      $(errorElement).removeClass("is-invalid");
+      $(targetElement).siblings(".invalid-feedback").remove();
+  }).done(function(response){
+      // Place States to States Field
+      var options = "<option selected disabled>Select Agence</option>";
+      var selected_old_data = "";
+      if($(targetElement).attr("data-old") != null) {
+          selected_old_data = $(targetElement).attr("data-old");
+      }
+      $.each(response,function(index,item) {
+          options += `<option value="${item.id}" data-id="${item.id}" data-code="${item.code}" data-agency-name="${item.name}" ${selected_old_data == item.name ? "selected" : ""}>${item.name}</option>`;
+      });
+
+      allAgencies = response;
+
+      $(targetElement).html(options);
+  }).fail(function(response) {
+      var faildMessage = "Something went worng! Please try again.";
+      var faildElement = `<span class="invalid-feedback" role="alert">
+                              <strong>${faildMessage}</strong>
+                          </span>`;
+      $(errorElement).addClass("is-invalid");
+      if($(targetElement).siblings(".invalid-feedback").length != 0) {
+          $(targetElement).siblings(".invalid-feedback").text(faildMessage);
+      }else {
+          errorElement.after(faildElement);
+      }
+  });
+}
+// getAllAgencies();
+
 
 /**
  * Function for reload the all countries that already loaded by using getAllCountries() function.
@@ -615,6 +663,22 @@ function reloadAllCountries(targetElement,errorElement = $(".country-select").si
   });
   $(targetElement).html(options);
 }
+
+function reloadAllAgencies(targetElement,errorElement = $(".agency-select").siblings(".select2")) {
+    if(allAgencies == "" || allAgencies == null) {
+      // alert();
+      return false;
+    }
+    var options = "<option selected disabled>Select Agency</option>";
+    var selected_old_data = "";
+    if($(targetElement).attr("data-old") != null) {
+      selected_old_data = $(targetElement).attr("data-old");
+    }
+    $.each(allAgencies,function(index,item) {
+        options += `<option value="${item.name}" data-id="${item.id}" data-mobile-code="${item.mobile_code}" data-currency-name="${item.currency_name}" data-currency-code="${item.currency_code}" data-currency-symbol="${item.currency_symbol}" ${selected_old_data == item.name ? "selected" : ""}>${item.name}</option>`;
+    });
+    $(targetElement).html(options);
+  }
 
 
 /**

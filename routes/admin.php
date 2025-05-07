@@ -101,6 +101,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('search', 'search')->name("search");
         Route::post('import', 'importData')->name('import');
         Route::get('export', 'exportData')->name('export');
+        Route::get('get_agencies', 'getAgencies')->name('list');
     });
 
     // Exchange rate

@@ -32,6 +32,12 @@ class AgenceController extends Controller
         ));
     }
 
+    public function getAgencies(Request $request)
+    {
+        $agences = Agence::all();
+        return response()->json($agences, 200);
+    }
+
     /**
      * Show the form for creating a new resource.
      *

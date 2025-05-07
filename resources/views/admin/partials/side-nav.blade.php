@@ -44,13 +44,13 @@
                             'route'     => "admin.agence.index",
                             'icon'      => "menu-icon las la-building",
                         ],
-                        [
+                        {{--  [
                             'title'     => __("Exchange Rate"),
                             'route'     => "admin.exchange.rate.index",
                             'icon'      => "menu-icon las la-wallet",
-                        ],
+                        ],  --}}
                         [
-                            'title'     => "Config. Commissions",
+                            'title'     => "Configuration Collecte",
                             'route'     => "admin.trx.settings.index",
                             'icon'      => "menu-icon las la-hand-holding-usd",
                         ],

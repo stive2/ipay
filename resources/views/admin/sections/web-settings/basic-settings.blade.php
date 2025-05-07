@@ -376,6 +376,39 @@
             </div>
         </div>
     </div>
+    <div class="custom-card mt-15">
+        <div class="card-header">
+            <h6 class="title">{{ __("Activation multy currency & agency Settings") }}</h6>
+        </div>
+        <div class="card-body">
+            <div class="custom-inner-card mt-10 mb-10">
+                <div class="card-inner-body">
+                    <div class="row mb-10-none">
+                        <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 form-group">
+                            @include('admin.components.form.switcher',[
+                                'label'         => __("Multy Currency"),
+                                'name'          => 'multy_currency',
+                                'value'         => old('multy_currency',$basic_settings->multy_currency),
+                                'options'       => [__("Activated") => 1, __("Deactivated") => 0],
+                                'onload'        => true,
+                                'permission'    => "admin.web.settings.basic.settings.activation.update",
+                            ])
+                        </div>
+                        <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 form-group">
+                            @include('admin.components.form.switcher',[
+                                'label'         => __("Multy Agency"),
+                                'name'          => 'multy_agency',
+                                'value'         => old('multy_agency',$basic_settings->multy_agency),
+                               'options'       => [__("Activated") => 1, __("Deactivated") => 0],
+                                'onload'        => true,
+                                'permission'    => "admin.web.settings.basic.settings.activation.update",
+                            ])
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     {{--  <div class="custom-card mt-15">
         <div class="card-header">
             <h6 class="title">{{ __("Activation Settings (Merchant)") }}</h6>

@@ -19,7 +19,7 @@ class TrxSettingsController extends Controller
     public function index()
     {
         $page_title = __("Fees & Charges");
-        $transaction_charges = TransactionSetting::all();
+        $transaction_charges = TransactionSetting::with('currency')->get();
         $basic_settings = BasicSettings::first();
         return view('admin.sections.trx-settings.index', compact(
             'page_title',
@@ -62,7 +62,7 @@ class TrxSettingsController extends Controller
      */
     public function trxChargeUpdate(Request $request)
     {
-        $transaction_setting = TransactionSetting::where('slug', $request->slug)->first();
+        $transaction_setting = TransactionSetting::where('slug', $request->slug)->where('currency_id', $request->currency_id)->first();
         if (!$transaction_setting) return back()->with(['error' => [__("Transaction charge not found!")]]);
         if ($transaction_setting->agent_profit == true) {
             $agent_percent_commission   = 'required|numeric';

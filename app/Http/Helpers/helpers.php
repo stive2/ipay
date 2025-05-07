@@ -27,6 +27,7 @@ use App\Models\Admin\GatewayAPi;
 use App\Models\Admin\Language;
 use App\Models\Admin\ModuleSetting;
 use App\Models\Admin\PaymentGateway;
+use App\Models\Admin\TransactionSetting;
 use App\Models\AgentAuthorization;
 use App\Models\AgentNotification;
 use App\Models\AgentWallet;
@@ -119,6 +120,30 @@ function all_currencies()
 
     return json_decode(json_encode($currencies));
 }
+
+function get_currency_data($code)
+{
+    $currency = Currency::where('code',$code)->first();
+    $trxSettings = TransactionSetting::where('slug','money-in')->where('currency_id', $currency->id)->first();
+
+    $data = [
+        'currency' => $currency,
+        'settings'  => $trxSettings
+    ];
+
+    return json_decode(json_encode($data));
+}
+
+function get_currencies_data()
+{
+    return Currency::join('transaction_settings', 'currencies.id', '=', 'transaction_settings.currency_id')
+        ->where('transaction_settings.slug','money-in')
+        ->select('currencies.*','transaction_settings.*')
+        ->get()
+        ->keyBy('code') // par exemple, si chaque devise a un code unique
+        ->toArray();    // convertit en tableau associatif pour Twig
+}
+
 
 function get_country_phone_code($country)
 {
@@ -1892,6 +1917,19 @@ function authWalletBalance()
     } else if (auth()->guard('agent')->check()) {
         $wallet = AgentWallet::where('agent_id', auth()->user()->id)->first();
         return number_format($wallet->balance, 2);
+    }
+}
+function authWalletsBalance()
+{
+    if (auth()->guard('web')->check()) {
+        $wallets = UserWallet::where('user_id', auth()->user()->id)->get();
+        return $wallets;
+    } else if (auth()->guard('merchant')->check()) {
+        $wallets = MerchantWallet::where('merchant_id', auth()->user()->id)->get();
+        return $wallets;
+    } else if (auth()->guard('agent')->check()) {
+        $wallets = AgentWallet::where('agent_id', auth()->user()->id)->get();
+        return $wallets;
     }
 }
 function getAmount($amount, $length = 8)

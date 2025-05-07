@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Models\Admin\Agence;
 use App\Models\Agent;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -11,7 +12,7 @@ class AgentExport implements FromArray, WithHeadings{
     public function headings(): array
     {
         return [
-            ['SL', 'PRENOM','NOM','EMAIL','MATRICULE',"TEL",'STATUS','TIME'],
+            ['SL', 'PRENOM','NOM','EMAIL', 'CODE_AGENCE','MATRICULE',"TEL",'STATUS','TIME'],
         ];
     }
 
@@ -24,11 +25,21 @@ class AgentExport implements FromArray, WithHeadings{
                 $status =  "Inactif";
             }
 
+            if ($item->agence_id) {
+                $agence = Agence::find($item->agence_id);
+                if ($agence) {
+                    $codeAgence = $agence->code;
+                } else {
+                    $codeAgence = '';
+                }
+            }
+
             return [
                 'id'    => $key + 1,
                 'prenom'  => $item->firstname,
                 'nom'  => $item->lastname,
                 'email'  =>  $item->email,
+                'code_agence'  => $codeAgence,
                 'matricule'  =>  $item->matricule,
                 'tel'  => '+ '.$item->full_mobile,
                 'status'  => $status,

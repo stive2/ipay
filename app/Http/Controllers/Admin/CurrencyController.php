@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Http\Helpers\Response;
+use App\Models\Admin\TransactionSetting;
 use App\Models\Agent;
 use App\Models\AgentWallet;
 use App\Models\User;
@@ -109,13 +110,17 @@ class CurrencyController extends Controller
         $datas[] = $validated;
         DB::beginTransaction();
         // try{
-            $currency = DB::table("currencies")->insert($datas);
+            DB::table("currencies")->insert($datas);
             $this->registered();
+            $this->trxChargeUpdate();
             DB::commit();
         /* }catch(Exception $e) {
             DB::rollBack();
             return back()->withErrors($validator)->withInput()->with(['error' => [__("Something went wrong! Please try again.")]]);
         } */
+
+        $currency = Currency::where('code', $validated['code'])->first();
+
 
         // Uplaod File
         if($request->hasFile('flag')) {
@@ -124,7 +129,7 @@ class CurrencyController extends Controller
                 $uploadFlag = upload_files_from_path_dynamic($image,'currency-flag');
 
                 // Update Database
-                Currency::where('code', $validated['code'])->update([
+                $currency->update([
                     'flag'  => $uploadFlag,
                 ]);
             }catch(Exception $e) {
@@ -188,6 +193,39 @@ class CurrencyController extends Controller
         }
 
         DB::table("user_wallets")->insert($wallets);
+    }
+
+    public function trxChargeUpdate()
+    {
+        $currencies = Currency::active()->roleHasOne()->pluck("id")->toArray();
+        $transaction_setting = [];
+        foreach($currencies as $currency_id) {
+
+            if(TransactionSetting::where('slug','money-in')->where('currency_id',$currency_id)->count() > 0) {
+                continue;
+            }
+
+            $transaction_setting[] = [
+                'admin_id' => Auth::user()->id,
+                'currency_id' => $currency_id,
+                'slug' => 'money-in',
+                'title' => 'Money In Charges',
+                'fixed_charge' => 0,
+                'percent_charge' => 0,
+                'min_limit' => 0,
+                'max_limit' => 0,
+                'monthly_limit' => 0,
+                'daily_limit' => 0,
+                'status' => 1,
+                'agent_fixed_commissions' => 0,
+                'agent_percent_commissions' => 0,
+                'agent_profit' => 1,
+                'type_commission' => 0,
+                'created_at' => now(),
+                // 'paliers_commissions' => (object) [],
+            ];
+        }
+        DB::table("transaction_settings")->insert($transaction_setting);
     }
 
 

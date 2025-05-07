@@ -50,6 +50,9 @@
                         <select name="country" class="form--control country-select select2-basic" > </select>
                     </div>
                     <div class="col-xl-4 col-lg-4 col-md-4 form-group">
+                        <select name="agency" class="form--control agency-select select2-basic" > </select>
+                    </div>
+                    <div class="col-xl-4 col-lg-4 col-md-4 form-group">
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text copytext">Email</span>
@@ -73,7 +76,7 @@
                                     'value'         => old('zip_code')
                                 ])
                     </div>
-                    <div class="col-xl-8 col-lg-8 form-group">
+                    <div class="col-xl-4 col-lg-4 form-group">
                         <div class="input-group">
                             <div class="input-group-text phone-code">+</div>
                             <input class="phone-code" type="hidden" name="phone_code" value="" />
@@ -145,6 +148,7 @@
 @push('script')
 <script>
       getAllCountries("{{ setRoute('global.countries.agent') }}");
+      getAllAgencies("{{ setRoute('admin.agence.list') }}");
         $(document).ready(function(){
             $("select[name=country]").on('change',function(){
                 var phoneCode = $("select[name=country] :selected").attr("data-mobile-code");

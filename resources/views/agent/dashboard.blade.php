@@ -23,7 +23,24 @@
         </div>
         <div class="dashboard-item-area">
             <div class="row mb-20-none">
-                <div class="col-xxl-3 col-xl-4 col-lg-6 col-md-6 col-sm-12 mb-20">
+                @foreach ($wallets ?? [] as $item)
+                    <div class="col-xxl-3 col-xl-4 col-lg-6 col-md-6 col-sm-12 mb-20">
+                        <div class="dashbord-item">
+                            <div class="dashboard-content">
+                                <div class="left">
+                                    <h6 class="title">{{ __("balance") }} {{ $item->currency->name }}</h6>
+                                    <div class="user-info">
+                                        <h4 class="user-count">{{ number_format($item->balance ?? 0, 2) }} <span class="text--base">{{ $item->currency->code }}</span></h4>
+                                    </div>
+                                </div>
+                                <div class="dashboard-icon">
+                                    <img src="{{  $item->currency->currencyImage }}" alt="flag" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+                {{--  <div class="col-xxl-3 col-xl-4 col-lg-6 col-md-6 col-sm-12 mb-20">
                     <div class="dashbord-item">
                         <div class="dashboard-content">
                             <span class="sub-title">{{__("balance")}}</span>
@@ -34,8 +51,8 @@
                             <img src="{{  @$baseCurrency->currencyImage }}" alt="flag" />
                         </div>
                     </div>
-                </div>
-                <div class="col-xxl-3 col-xl-4 col-lg-6 col-md-6 col-sm-12 mb-20">
+                </div>  --}}
+                {{--  <div class="col-xxl-3 col-xl-4 col-lg-6 col-md-6 col-sm-12 mb-20">
                     <div class="dashbord-item">
                         <div class="dashboard-content">
                             <span class="sub-title">{{ __("Last Add Sub Balance") }}</span>
@@ -56,7 +73,7 @@
                             <i class="fas fa-receipt"></i>
                         </div>
                     </div>
-                </div>
+                </div>  --}}
                 {{--  <div class="col-xxl-3 col-xl-4 col-lg-6 col-md-6 col-sm-12 mb-20">
                     <div class="dashbord-item">
                         <div class="dashboard-content">
@@ -68,7 +85,7 @@
                         </div>
                     </div>
                 </div>  --}}
-                <div class="col-xxl-3 col-xl-4 col-lg-6 col-md-6 col-sm-12 mb-20">
+                {{--  <div class="col-xxl-3 col-xl-4 col-lg-6 col-md-6 col-sm-12 mb-20">
                     <div class="dashbord-item">
                         <div class="dashboard-content">
                             <span class="sub-title">{{ __("Total Money In") }}</span>
@@ -78,7 +95,7 @@
                             <i class="fas fa-sign-in-alt"></i>
                         </div>
                     </div>
-                </div>
+                </div>  --}}
                 {{--  <div class="col-xxl-3 col-xl-4 col-lg-6 col-md-6 col-sm-12 mb-20">
                     <div class="dashbord-item">
                         <div class="dashboard-content">
@@ -123,7 +140,7 @@
                         </div>
                     </div>
                 </div>  --}}
-                <div class="col-xxl-3 col-xl-4 col-lg-6 col-md-6 col-sm-12 mb-20">
+                {{--  <div class="col-xxl-3 col-xl-4 col-lg-6 col-md-6 col-sm-12 mb-20">
                     <div class="dashbord-item">
                         <div class="dashboard-content">
                             <span class="sub-title">{{ __("Total Transactions Money In") }}</span>
@@ -147,7 +164,7 @@
                             </div>
                         </div>
                     </a>
-                </div>
+                </div>  --}}
 
             </div>
         </div>

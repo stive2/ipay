@@ -18,7 +18,7 @@
 @endsection
 
 @section('content')
-    <div class="custom-card">
+    {{--  <div class="custom-card">
         <div class="card-header">
             <h6 class="title">Paramètres des commissions</h6>
         </div>
@@ -53,7 +53,7 @@
                 </div>
             </form>
         </div>
-    </div>
+    </div>  --}}
     @foreach ($transaction_charges as $item)
         @if($item->status == 1)
             @include('admin.components.trx-settings-charge-block',[

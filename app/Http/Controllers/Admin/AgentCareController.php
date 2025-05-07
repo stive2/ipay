@@ -40,7 +40,7 @@ class AgentCareController extends Controller
     {
         $page_title = __("All Agents");
         // $agents = Agent::orderBy('id', 'desc')->paginate(12);
-        $agents = Agent::with('wallet')->leftJoin('agent_profits', 'agents.id', '=', 'agent_profits.agent_id')
+        $agents = Agent::with('wallets')->leftJoin('agent_profits', 'agents.id', '=', 'agent_profits.agent_id')
                         ->select('agents.*',
                             DB::raw('SUM(CASE WHEN agent_profits.paid = 0 THEN agent_profits.total_charge ELSE 0 END) as commissions')
                         ) // Calcul de la somme des `total_charge` où le statut est 0

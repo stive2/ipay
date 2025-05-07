@@ -10,6 +10,7 @@ use App\Models\Admin\Currency;
 use App\Models\Agent;
 use App\Models\AgentProfit;
 use App\Models\AgentQrCode;
+use App\Models\AgentWallet;
 use App\Models\Transaction;
 use App\Models\User;
 use Exception;
@@ -133,8 +134,14 @@ class DashboardController extends Controller
             'month_day'        => $month_day,
         ];
 
+        $wallets = AgentWallet::where('agent_id', auth()->user()->id)->get();
+        $wallets->map(function ($item) {
+            $item->currency = Currency::where('id', $item->currency_id)->first();
+            return $item;
+        });
+
         //
-        return view('agent.dashboard', compact("page_title", "baseCurrency", 'transactions',  'data', 'chartData'));
+        return view('agent.dashboard', compact("page_title", "baseCurrency", 'transactions',  'data', 'chartData','wallets'));
     }
 
     public function logout(Request $request)

@@ -17,7 +17,7 @@ class Currency extends Model
         'both',
         'senderCurrency',
         'receiverCurrency',
-        'editData',
+        // 'editData',
         'currencyImage'
     ];
     protected $casts = [
@@ -125,6 +125,11 @@ class Currency extends Model
         }else {
             return files_asset_path("currency-flag") . "/" . $image;
         }
+    }
+
+    public function trxSettings()
+    {
+        return $this->hasOne(TransactionSetting::class);
     }
 
 }

@@ -18,6 +18,7 @@
             @method("PUT")
 
             <input type="hidden" value="{{ $item->slug }}" name="slug">
+            <input type="hidden" value="{{ $item->currency->id }}" name="currency_id">
             <div class="row">
                 <div class="{{ $item->agent_profit == true ? 'col-xl-4 col-lg-4': 'col-xl-6 col-lg-6 '}} mb-10">
                     <div class="custom-inner-card">
@@ -30,14 +31,14 @@
                                     <label>Montant minimum</label>
                                     <div class="input-group">
                                         <input type="text" class="form--control number-input" value="{{ old($data->slug.'_min_limit',$data->min_limit) }}" name="{{$data->slug}}_min_limit">
-                                        <span class="input-group-text">{{ get_default_currency_code($default_currency) }}</span>
+                                        <span class="input-group-text">{{ $item->currency->code }}</span>
                                     </div>
                                 </div>
                                 <div class="col-xxl-12 col-xl-6 col-lg-6 form-group">
                                     <label>Montant maximum</label>
                                     <div class="input-group">
                                         <input type="text" class="form--control number-input" value="{{ old($data->slug.'_max_limit',$data->max_limit) }}" name="{{$data->slug}}_max_limit">
-                                        <span class="input-group-text">{{ get_default_currency_code($default_currency) }}</span>
+                                        <span class="input-group-text">{{ $item->currency->code }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -55,7 +56,7 @@
                                     <label>Charges fixes</label>
                                     <div class="input-group">
                                         <input type="text" class="form--control number-input" value="{{ old($data->slug.'_fixed_charge',$data->fixed_charge) }}" name="{{$data->slug}}_fixed_charge">
-                                        <span class="input-group-text">{{ get_default_currency_code($default_currency) }}</span>
+                                        <span class="input-group-text">{{ $item->currency->code }}</span>
                                     </div>
                                 </div>
                                 <div class="col-xxl-12 col-xl-6 col-lg-6 form-group">
@@ -73,7 +74,7 @@
                 <div class="col-xl-4 col-lg-4 mb-10">
                     <div class="custom-inner-card">
                         <div class="card-inner-header">
-                            <h5 class="title-agent">Commissions des agents (compris dans les charges)</h5>
+                            <h5 class="title-agent">Commissions agents (compris dans les charges)</h5>
                         </div>
                         <div class="card-inner-body">
                             <div class="row">
@@ -81,7 +82,7 @@
                                     <label>Commissions fixes</label>
                                     <div class="input-group">
                                         <input type="text" class="form--control number-input" value="{{ old($data->slug.'_agent_fixed_commissions',$data->agent_fixed_commissions) }}" name="{{$data->slug}}_agent_fixed_commissions">
-                                        <span class="input-group-text">{{ get_default_currency_code($default_currency) }}</span>
+                                        <span class="input-group-text">{{ $item->currency->code }}</span>
                                     </div>
                                 </div>
                                 <div class="col-xxl-12 col-xl-6 col-lg-6 form-group">

@@ -27,6 +27,8 @@ class BasicSettings extends Model
         'merchant_email_notification'          => 'boolean',
         'merchant_kyc_verification'          => 'boolean',
         'collecte_on'          => 'boolean',
+        'multy_agency'          => 'boolean',
+        'multy_currency'          => 'boolean',
     ];
 
 

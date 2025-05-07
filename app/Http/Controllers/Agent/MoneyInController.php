@@ -46,7 +46,19 @@ class MoneyInController extends Controller
         $page_title = __("Money In");
         $moneyInCharge = TransactionSetting::where('slug', 'money-in')->where('status', 1)->first();
         $transactions = Transaction::agentAuth()->moneyIn()->latest()->take(10)->get();
-        return view('agent.sections.money-in.index', compact("page_title", 'moneyInCharge', 'transactions'));
+        $currencies = Currency::join('transaction_settings', 'currencies.id', '=', 'transaction_settings.currency_id')
+        ->where('transaction_settings.slug','money-in')
+        ->select('currencies.code','transaction_settings.min_limit','transaction_settings.max_limit','transaction_settings.percent_charge','transaction_settings.fixed_charge')
+        ->get()
+        ->keyBy('code') // par exemple, si chaque devise a un code unique
+        ->toArray();
+        $wallets = AgentWallet::where('agent_wallets.status', 1)
+        ->where('agent_wallets.agent_id', auth()->id())  // Ajout de la condition pour l'agent authentifié
+        ->join('currencies', 'currencies.id', '=', 'agent_wallets.currency_id')
+        ->select('currencies.code', 'agent_wallets.balance', 'agent_wallets.id')
+        ->get()->keyBy('code')->toArray();
+
+        return view('agent.sections.money-in.index', compact("page_title", 'moneyInCharge', 'transactions', 'currencies','wallets'));
     }
     public function checkUser(Request $request)
     {
@@ -69,6 +81,7 @@ class MoneyInController extends Controller
             'amount' => 'required|numeric|gt:0',
             'email' => 'required',
             'mobile' => 'required',
+            'currency_id' => 'required',
             // 'password' => 'required'
         ])->validate();
 
@@ -78,7 +91,7 @@ class MoneyInController extends Controller
             return back()->with(['error' => [__('La collecte est actuellement fermée')]]);
         }
 
-        $sender_wallet = AgentWallet::auth()->active()->first();
+        $sender_wallet = AgentWallet::auth()->active()->where("currency_id", $validated['currency_id'])->first();
         if (!$sender_wallet) {
             return back()->with(['error' => [__('Agent wallet not found')]]);
         }
@@ -130,18 +143,18 @@ class MoneyInController extends Controller
             $receiver->save();
         }
 
-        $receiver_wallet = UserWallet::where("user_id", $receiver->id)->first();
+        $receiver_wallet = UserWallet::where("user_id", $receiver->id)->where("currency_id", $validated['currency_id'])->first();
 
         if (!$receiver_wallet) {
             return back()->with(['error' => [__("Receiver wallet not found")]]);
         }
 
-        $trx_charges =  TransactionSetting::where('slug', 'money-in')->where('status', 1)->first();
+        $trx_charges =  TransactionSetting::where('slug', 'money-in')->where('currency_id', $validated['currency_id'])->where('status', 1)->first();
         $charges = $this->moneyInCharge($validated['amount'], $trx_charges, $sender_wallet, $receiver->wallet->currency);
 
         $sender_currency_rate = $sender_wallet->currency->rate;
-        $min_amount = $trx_charges->min_limit * $sender_currency_rate;
-        $max_amount = $trx_charges->max_limit * $sender_currency_rate;
+        $min_amount = $trx_charges->min_limit;
+        $max_amount = $trx_charges->max_limit;
 
         if ($charges['sender_amount'] < $min_amount || $charges['sender_amount'] > $max_amount) {
             return back()->with(['error' => [__("Please follow the transaction limit")]]);
@@ -508,7 +521,7 @@ class MoneyInController extends Controller
         $data['fixed_charge']                       = $sender_wallet->currency->rate * $charges->fixed_charge ?? 0;
         $data['total_charge']                       = $data['percent_charge'] + $data['fixed_charge'];
         $data['sender_wallet_balance']              = $sender_wallet->balance;
-        $data['receiver_amount']                    = ($sender_amount - $data['total_charge']) * $exchange_rate;
+        $data['receiver_amount']                    = ($sender_amount - $data['total_charge']);
         $data['payable']                            = $sender_amount; //+ $data['total_charge'];
         $data['agent_percent_commission']           = ($sender_amount / 100) * $charges->agent_percent_commissions ?? 0;
         $data['agent_fixed_commission']             = $sender_wallet->currency->rate * $charges->agent_fixed_commissions ?? 0;

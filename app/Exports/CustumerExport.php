@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Models\Admin\Agence;
 use App\Models\User;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -30,12 +31,22 @@ class CustumerExport implements FromArray, WithHeadings{
                 $status =  "Inactif";
             }
 
+            if ($item->agence_id) {
+                $agence = Agence::find($item->agence_id);
+                if ($agence) {
+                    $codeAgence = $agence->code;
+                } else {
+                    $codeAgence = '';
+                }
+            }
+
             return [
                 'id'    => $key + 1,
                 'prenom'  => $item->firstname,
                 'nom'  => $item->lastname,
                 'email'  =>  $item->email,
                 'matricule'  =>  $item->matricule,
+                'code_agence'  => $codeAgence,
                 'tel'  => '+ '.$item->full_mobile,
                 'num_compte'  => $item->rib . ' ',
                 'type'  =>  $account_type,

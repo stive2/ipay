@@ -42,6 +42,10 @@
                     <div class="col-xl-4 col-lg-4 col-md-4 form-group">
                         <select name="country" class="form--control country-select select2-basic" > </select>
                     </div>
+
+                    <div class="col-xl-4 col-lg-4 col-md-4 form-group">
+                        <select name="agency" class="form--control agency-select select2-basic" > </select>
+                    </div>
                     <div class="col-xl-4 col-lg-4 col-md-4 form-group">
                         <div class="input-group">
                             <div class="input-group-prepend">
@@ -150,6 +154,7 @@
 
 @push('script')
 <script>
+      getAllAgencies("{{ setRoute('admin.agence.list') }}");
       getAllCountries("{{ setRoute('global.countries') }}");
         $(document).ready(function(){
             $("select[name=country]").on('change',function(){
